@@ -1,0 +1,147 @@
+{
+  "database": "cinema_movies",
+  "collections": {
+    "movies": {
+      "description": "Colección de películas",
+      "schema": {
+        "_id": "ObjectId",
+        "title": "string (required)",
+        "description": "string (required)",
+        "duration": "number (required, min: 1)",
+        "genre": ["string (required)"],
+        "director": "string (required)",
+        "cast": ["string"],
+        "releaseDate": "Date (required)",
+        "rating": "number (min: 0, max: 10, default: 0)",
+        "posterUrl": "string (default: '')",
+        "trailerUrl": "string (default: '')",
+        "isActive": "boolean (default: true)",
+        "createdAt": "Date (auto-generated)",
+        "updatedAt": "Date (auto-generated)"
+      },
+      "indexes": [
+        { "fields": { "title": "text", "description": "text" } },
+        { "fields": { "genre": 1 } },
+        { "fields": { "isActive": 1 } },
+        { "fields": { "releaseDate": 1 } }
+      ],
+      "sample_documents": [
+        {
+          "_id": "507f1f77bcf86cd799439011",
+          "title": "The Dark Knight",
+          "description": "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
+          "duration": 152,
+          "genre": ["Action", "Crime", "Drama"],
+          "director": "Christopher Nolan",
+          "cast": ["Christian Bale", "Heath Ledger", "Aaron Eckhart", "Michael Caine"],
+          "releaseDate": "2008-07-18T00:00:00.000Z",
+          "rating": 9.0,
+          "posterUrl": "https://example.com/dark-knight-poster.jpg",
+          "trailerUrl": "https://example.com/dark-knight-trailer.mp4",
+          "isActive": true,
+          "createdAt": "2024-01-01T00:00:00.000Z",
+          "updatedAt": "2024-01-01T00:00:00.000Z"
+        },
+        {
+          "_id": "507f1f77bcf86cd799439012",
+          "title": "Inception",
+          "description": "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
+          "duration": 148,
+          "genre": ["Action", "Sci-Fi", "Thriller"],
+          "director": "Christopher Nolan",
+          "cast": ["Leonardo DiCaprio", "Marion Cotillard", "Tom Hardy", "Joseph Gordon-Levitt"],
+          "releaseDate": "2010-07-16T00:00:00.000Z",
+          "rating": 8.8,
+          "posterUrl": "https://example.com/inception-poster.jpg",
+          "trailerUrl": "https://example.com/inception-trailer.mp4",
+          "isActive": true,
+          "createdAt": "2024-01-01T00:00:00.000Z",
+          "updatedAt": "2024-01-01T00:00:00.000Z"
+        },
+        {
+          "_id": "507f1f77bcf86cd799439013",
+          "title": "Interstellar",
+          "description": "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.",
+          "duration": 169,
+          "genre": ["Adventure", "Drama", "Sci-Fi"],
+          "director": "Christopher Nolan",
+          "cast": ["Matthew McConaughey", "Anne Hathaway", "Jessica Chastain", "Michael Caine"],
+          "releaseDate": "2014-11-07T00:00:00.000Z",
+          "rating": 8.6,
+          "posterUrl": "https://example.com/interstellar-poster.jpg",
+          "trailerUrl": "https://example.com/interstellar-trailer.mp4",
+          "isActive": true,
+          "createdAt": "2024-01-01T00:00:00.000Z",
+          "updatedAt": "2024-01-01T00:00:00.000Z"
+        }
+      ]
+    },
+    "genres": {
+      "description": "Colección de géneros cinematográficos",
+      "schema": {
+        "_id": "ObjectId",
+        "name": "string (required, unique)",
+        "description": "string (default: '')",
+        "createdAt": "Date (auto-generated)",
+        "updatedAt": "Date (auto-generated)"
+      },
+      "indexes": [
+        { "fields": { "name": 1 }, "options": { "unique": true } }
+      ],
+      "sample_documents": [
+        {
+          "_id": "507f1f77bcf86cd799439021",
+          "name": "Action",
+          "description": "Fast-paced and exciting movies with physical stunts and chases",
+          "createdAt": "2024-01-01T00:00:00.000Z",
+          "updatedAt": "2024-01-01T00:00:00.000Z"
+        },
+        {
+          "_id": "507f1f77bcf86cd799439022",
+          "name": "Drama",
+          "description": "Serious, plot-driven presentations, portraying realistic characters",
+          "createdAt": "2024-01-01T00:00:00.000Z",
+          "updatedAt": "2024-01-01T00:00:00.000Z"
+        },
+        {
+          "_id": "507f1f77bcf86cd799439023",
+          "name": "Sci-Fi",
+          "description": "Science fiction films that explore futuristic concepts",
+          "createdAt": "2024-01-01T00:00:00.000Z",
+          "updatedAt": "2024-01-01T00:00:00.000Z"
+        },
+        {
+          "_id": "507f1f77bcf86cd799439024",
+          "name": "Comedy",
+          "description": "Light-hearted plots consistently and deliberately designed to amuse and provoke laughter",
+          "createdAt": "2024-01-01T00:00:00.000Z",
+          "updatedAt": "2024-01-01T00:00:00.000Z"
+        }
+      ]
+    }
+  },
+  "relationships": {
+    "movies_to_genres": {
+      "type": "many-to-many",
+      "description": "Las películas pueden tener múltiples géneros, y los géneros pueden estar en múltiples películas",
+      "implementation": "Array de strings en el campo 'genre' de movies"
+    }
+  },
+  "aggregation_examples": {
+    "popular_genres": {
+      "description": "Obtener géneros más populares",
+      "pipeline": [
+        { "$unwind": "$genre" },
+        { "$group": { "_id": "$genre", "count": { "$sum": 1 } } },
+        { "$sort": { "count": -1 } }
+      ]
+    },
+    "movies_by_rating": {
+      "description": "Obtener películas agrupadas por rango de rating",
+      "pipeline": [
+        { "$group": { "_id": { "$floor": "$rating" }, "movies": { "$push": "$title" } } },
+        { "$sort": { "_id": -1 } }
+      ]
+    }
+  }
+}

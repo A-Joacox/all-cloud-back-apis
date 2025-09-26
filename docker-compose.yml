@@ -1,0 +1,162 @@
+version: '3.8'
+
+services:
+  # MongoDB para Movies API
+  mongodb:
+    image: mongo:7.0
+    container_name: cinema_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: cinema_movies
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - cinema_network
+
+  # MySQL para Rooms API
+  mysql:
+    image: mysql:8.0
+    container_name: cinema_mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: cinema_rooms
+      MYSQL_USER: cinema_user
+      MYSQL_PASSWORD: cinema_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database-designs/mysql-schema.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - cinema_network
+
+  # PostgreSQL para Reservations API
+  postgresql:
+    image: postgres:15
+    container_name: cinema_postgresql
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: cinema_reservations
+      POSTGRES_USER: cinema_user
+      POSTGRES_PASSWORD: cinema_password
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+      - ./database-designs/postgresql-schema.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - cinema_network
+
+  # Movies API (Next.js + MongoDB)
+  movies-api:
+    build:
+      context: ./movies-api
+      dockerfile: Dockerfile
+    container_name: cinema_movies_api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/cinema_movies
+      PORT: 3001
+      NODE_ENV: production
+    depends_on:
+      - mongodb
+    networks:
+      - cinema_network
+
+  # Rooms API (Python + MySQL)
+  rooms-api:
+    build:
+      context: ./rooms-api
+      dockerfile: Dockerfile
+    container_name: cinema_rooms_api
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: cinema_user
+      MYSQL_PASSWORD: cinema_password
+      MYSQL_DATABASE: cinema_rooms
+      FLASK_ENV: production
+      PORT: 3002
+    depends_on:
+      - mysql
+    networks:
+      - cinema_network
+
+  # Reservations API (Java + PostgreSQL)
+  reservations-api:
+    build:
+      context: ./reservations-api
+      dockerfile: Dockerfile
+    container_name: cinema_reservations_api
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      DB_USERNAME: cinema_user
+      DB_PASSWORD: cinema_password
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql:5432/cinema_reservations
+    depends_on:
+      - postgresql
+    networks:
+      - cinema_network
+
+  # Gateway API
+  gateway-api:
+    build:
+      context: ./gateway-api
+      dockerfile: Dockerfile
+    container_name: cinema_gateway_api
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: 3004
+      MOVIES_API_URL: http://movies-api:3001
+      ROOMS_API_URL: http://rooms-api:3002
+      RESERVATIONS_API_URL: http://reservations-api:3003
+      NODE_ENV: production
+    depends_on:
+      - movies-api
+      - rooms-api
+      - reservations-api
+    networks:
+      - cinema_network
+
+  # Analytics API
+  analytics-api:
+    build:
+      context: ./analytics-api
+      dockerfile: Dockerfile
+    container_name: cinema_analytics_api
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      PORT: 3005
+      MOVIES_API_URL: http://movies-api:3001
+      ROOMS_API_URL: http://rooms-api:3002
+      RESERVATIONS_API_URL: http://reservations-api:3003
+      NODE_ENV: production
+    depends_on:
+      - movies-api
+      - rooms-api
+      - reservations-api
+    networks:
+      - cinema_network
+
+volumes:
+  mongodb_data:
+  mysql_data:
+  postgresql_data:
+
+networks:
+  cinema_network:
+    driver: bridge

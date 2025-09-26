@@ -1,0 +1,19 @@
+{
+  "name": "data-generators",
+  "version": "1.0.0",
+  "description": "Data generators for cinema microservices",
+  "main": "index.js",
+  "scripts": {
+    "generate-mongodb": "node mongodb-data-generator.js",
+    "generate-mysql": "python mysql-data-generator.py",
+    "generate-postgresql": "python postgresql-data-generator.py",
+    "generate-all": "npm run generate-mongodb && npm run generate-mysql && npm run generate-postgresql"
+  },
+  "dependencies": {
+    "mongodb": "^6.3.0",
+    "faker": "^5.5.3",
+    "mysql2": "^3.6.5",
+    "pg": "^8.11.3",
+    "python-dotenv": "^1.0.0"
+  }
+}

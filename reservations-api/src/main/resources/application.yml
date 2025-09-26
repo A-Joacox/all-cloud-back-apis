@@ -1,0 +1,33 @@
+server:
+  port: 3003
+
+spring:
+  application:
+    name: reservations-api
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cinema_reservations
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+# External services
+external:
+  movies:
+    base-url: http://localhost:3001
+  rooms:
+    base-url: http://localhost:3002
+
+logging:
+  level:
+    com.cinema: DEBUG
+    org.springframework.web: DEBUG
