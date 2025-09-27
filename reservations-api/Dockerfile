@@ -1,10 +1,10 @@
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-alpine
 
 WORKDIR /app
 
 # Copiar pom.xml y descargar dependencias
 COPY pom.xml .
-RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache maven
 RUN mvn dependency:go-offline -B
 
 # Copiar código fuente
@@ -14,7 +14,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Crear imagen final
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 

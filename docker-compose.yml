@@ -21,7 +21,7 @@ services:
     container_name: cinema_mysql
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: cinema_rooms
