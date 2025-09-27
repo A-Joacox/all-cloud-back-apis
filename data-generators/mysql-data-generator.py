@@ -1,6 +1,5 @@
 import mysql.connector
 import random
-import string
 from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
@@ -27,7 +26,6 @@ ROOM_NAMES = [
 ]
 
 def generate_room():
-    """Genera una sala"""
     return {
         'name': random.choice(ROOM_NAMES) + f" {random.randint(1, 50)}",
         'capacity': random.randint(50, 200),
@@ -36,9 +34,8 @@ def generate_room():
     }
 
 def generate_seats(room_id, capacity):
-    """Genera asientos para una sala"""
     seats = []
-    rows = capacity // 10  # Asumiendo 10 asientos por fila
+    rows = capacity // 10
     if rows == 0:
         rows = 1
     
@@ -49,22 +46,19 @@ def generate_seats(room_id, capacity):
             seat_type = 'vip' if seat_num <= 2 else ('premium' if seat_num <= 6 else 'regular')
             seats.append({
                 'room_id': room_id,
-                'row_number': chr(65 + row),  # A, B, C, etc.
+                'row_number': chr(65 + row),
                 'seat_number': seat_num,
                 'seat_type': seat_type,
-                'is_available': random.choice([True, True, True, False])  # 75% disponibles
+                'is_available': random.choice([True, True, True, False])
             })
             seat_count += 1
             if seat_count >= capacity:
                 break
         if seat_count >= capacity:
             break
-    
     return seats
 
 def generate_schedule():
-    """Genera un horario"""
-    # Generar fecha aleatoria en los últimos 2 años
     start_date = datetime.now() - timedelta(days=730)
     end_date = datetime.now() + timedelta(days=30)
     
@@ -76,80 +70,59 @@ def generate_schedule():
     
     return {
         'movie_id': f"507f1f77bcf86cd799{random.randint(100000, 999999)}",
-        'room_id': random.randint(1, 100),  # Asumiendo 100 salas
+        'room_id': random.randint(1, 100),
         'show_time': random_date,
         'price': round(random.uniform(5.0, 25.0), 2),
-        'is_active': random.choice([True, True, True, False])  # 75% activos
+        'is_active': random.choice([True, True, True, False])
     }
 
 def generate_data():
-    """Función principal para generar datos"""
     connection = None
-    
     try:
-        # Conectar a MySQL
         connection = mysql.connector.connect(**MYSQL_CONFIG)
         cursor = connection.cursor()
-        
         print("Conectado a MySQL")
         
-        # Generar salas
-        print("Generando salas...")
-        rooms = []
-        ROOMS_COUNT = 100  # 100 salas
-        
-        for i in range(ROOMS_COUNT):
-            rooms.append(generate_room())
-        
         # Insertar salas
+        print("Generando salas...")
+        rooms = [generate_room() for _ in range(100)]
         insert_room_query = """
         INSERT INTO rooms (name, capacity, screen_type, is_active, created_at, updated_at)
         VALUES (%(name)s, %(capacity)s, %(screen_type)s, %(is_active)s, NOW(), NOW())
         """
-        
         cursor.executemany(insert_room_query, rooms)
         connection.commit()
         print(f"✅ Insertadas {len(rooms)} salas")
         
-        # Generar asientos para cada sala
+        # Insertar asientos
         print("Generando asientos...")
         all_seats = []
-        
-        for room_id in range(1, ROOMS_COUNT + 1):
-            room = rooms[room_id - 1]
-            seats = generate_seats(room_id, room['capacity'])
+        for room_id in range(1, 101):
+            seats = generate_seats(room_id, rooms[room_id - 1]['capacity'])
             all_seats.extend(seats)
-            
-            # Insertar en lotes de 1000
             if len(all_seats) >= 1000:
                 insert_seat_query = """
-                INSERT INTO seats (room_id, row_number, seat_number, seat_type, is_available, created_at)
+                INSERT INTO seats (room_id, `row_number`, `seat_number`, seat_type, is_available, created_at)
                 VALUES (%(room_id)s, %(row_number)s, %(seat_number)s, %(seat_type)s, %(is_available)s, NOW())
                 """
                 cursor.executemany(insert_seat_query, all_seats)
                 connection.commit()
                 print(f"✅ Insertados {len(all_seats)} asientos (lote)")
                 all_seats = []
-        
-        # Insertar asientos restantes
         if all_seats:
             insert_seat_query = """
-            INSERT INTO seats (room_id, row_number, seat_number, seat_type, is_available, created_at)
+            INSERT INTO seats (room_id, `row_number`, `seat_number`, seat_type, is_available, created_at)
             VALUES (%(room_id)s, %(row_number)s, %(seat_number)s, %(seat_type)s, %(is_available)s, NOW())
             """
             cursor.executemany(insert_seat_query, all_seats)
             connection.commit()
             print(f"✅ Insertados {len(all_seats)} asientos restantes")
         
-        # Generar horarios
+        # Insertar horarios
         print("Generando horarios...")
         schedules = []
-        SCHEDULES_COUNT = 12000  # 12,000 horarios
-        
-        for i in range(SCHEDULES_COUNT):
+        for i in range(12000):
             schedules.append(generate_schedule())
-            
-            # Insertar en lotes de 1000
             if len(schedules) >= 1000:
                 insert_schedule_query = """
                 INSERT INTO schedules (movie_id, room_id, show_time, price, is_active, created_at)
@@ -159,8 +132,6 @@ def generate_data():
                 connection.commit()
                 print(f"✅ Insertados {len(schedules)} horarios (lote)")
                 schedules = []
-        
-        # Insertar horarios restantes
         if schedules:
             insert_schedule_query = """
             INSERT INTO schedules (movie_id, room_id, show_time, price, is_active, created_at)
@@ -170,14 +141,9 @@ def generate_data():
             connection.commit()
             print(f"✅ Insertados {len(schedules)} horarios restantes")
         
-        print(f"🏢 Total de salas generadas: {ROOMS_COUNT}")
-        print(f"💺 Total de asientos generados: {sum(room['capacity'] for room in rooms)}")
-        print(f"🎬 Total de horarios generados: {SCHEDULES_COUNT}")
-        
+        print("🚀 Datos generados exitosamente")
     except mysql.connector.Error as error:
         print(f"Error de MySQL: {error}")
-    except Exception as error:
-        print(f"Error: {error}")
     finally:
         if connection and connection.is_connected():
             cursor.close()
