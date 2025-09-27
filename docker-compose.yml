@@ -152,10 +152,79 @@ services:
     networks:
       - cinema_network
 
+  # Redis para Data Ingestion Service
+  redis:
+    image: redis:7-alpine
+    container_name: cinema_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - cinema_network
+
+  # Data Ingestion Service (Python + AWS)
+  data-ingestion-service:
+    build:
+      context: ./data-ingestion-service
+      dockerfile: Dockerfile
+    container_name: cinema_data_ingestion
+    restart: unless-stopped
+    ports:
+      - "3006:3006"
+    environment:
+      # AWS Configuration
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      
+      # S3 Configuration
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-cinema-data-bucket}
+      S3_BACKUP_FOLDER: ${S3_BACKUP_FOLDER:-backups}
+      S3_ANALYTICS_FOLDER: ${S3_ANALYTICS_FOLDER:-analytics}
+      
+      # DynamoDB Configuration
+      DYNAMODB_MOVIES_TABLE: ${DYNAMODB_MOVIES_TABLE:-cinema-movies}
+      DYNAMODB_ROOMS_TABLE: ${DYNAMODB_ROOMS_TABLE:-cinema-rooms}
+      DYNAMODB_RESERVATIONS_TABLE: ${DYNAMODB_RESERVATIONS_TABLE:-cinema-reservations}
+      DYNAMODB_USERS_TABLE: ${DYNAMODB_USERS_TABLE:-cinema-users}
+      
+      # Local Database Configuration
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: cinema_user
+      MYSQL_PASSWORD: cinema_password
+      MYSQL_DATABASE: cinema_rooms
+      
+      POSTGRES_HOST: postgresql
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: cinema_user
+      POSTGRES_PASSWORD: cinema_password
+      POSTGRES_DATABASE: cinema_reservations
+      
+      MONGODB_URI: mongodb://mongodb:27017/cinema_movies
+      
+      # Redis Configuration
+      REDIS_URL: redis://redis:6379/0
+      
+      # Ingestion Settings
+      BATCH_SIZE: ${BATCH_SIZE:-1000}
+      MAX_RETRIES: ${MAX_RETRIES:-3}
+      RETRY_DELAY: ${RETRY_DELAY:-5}
+    depends_on:
+      - mysql
+      - postgresql
+      - mongodb
+      - redis
+    networks:
+      - cinema_network
+
 volumes:
   mongodb_data:
   mysql_data:
   postgresql_data:
+  redis_data:
 
 networks:
   cinema_network:

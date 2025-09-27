@@ -31,6 +31,11 @@ Sistema completo de microservicios para gestión de un cine, implementado con di
    - Análisis de datos y métricas
    - Reportes y estadísticas
 
+6. **Data Ingestion Service** (Python + AWS) 🆕
+   - Puerto: 3006
+   - Migración y sincronización de datos a AWS
+   - Servicios: S3, DynamoDB, RDS
+
 ## Bases de Datos
 
 ### MongoDB (Movies API)
@@ -48,6 +53,11 @@ Sistema completo de microservicios para gestión de un cine, implementado con di
 - **Tablas**: `users`, `reservations`, `reserved_seats`, `payments`
 - **Relaciones**: 1:N entre users-reservations, reservations-reserved_seats, 1:1 entre reservations-payments
 
+### AWS Services (Data Ingestion) 🆕
+- **S3**: Backups y almacenamiento de datos históricos
+- **DynamoDB**: Base de datos NoSQL para consultas rápidas
+- **RDS**: Data warehouse para analytics (opcional)
+
 ## Instalación y Ejecución
 
 ### Opción 1: Docker Compose (Recomendado)
@@ -55,7 +65,11 @@ Sistema completo de microservicios para gestión de un cine, implementado con di
 ```bash
 # Clonar el repositorio
 git clone <repository-url>
-cd proyecto
+cd all-cloud-back-apis
+
+# Configurar variables de entorno para AWS
+cp env.docker.example .env.docker
+# Editar .env.docker con tus credenciales AWS
 
 # Ejecutar todos los servicios
 docker-compose up -d
@@ -76,6 +90,7 @@ docker-compose down
 - MongoDB
 - MySQL 8.0+
 - PostgreSQL 15+
+- Redis (para Data Ingestion Service)
 
 #### Movies API
 ```bash
@@ -121,6 +136,15 @@ cp .env.example .env
 npm run dev
 ```
 
+#### Data Ingestion Service 🆕
+```bash
+cd data-ingestion-service
+pip install -r requirements.txt
+cp env.example .env
+# Configurar credenciales AWS en .env
+python main.py --mode api --port 3006
+```
+
 ## Endpoints Principales
 
 ### Movies API (http://localhost:3001)
@@ -156,17 +180,28 @@ npm run dev
 - `GET /api/analytics/user-behavior` - Comportamiento usuarios
 - `GET /api/analytics/dashboard` - Dashboard general
 
+### Data Ingestion Service (http://localhost:3006) 🆕
+- `GET /health` - Estado del servicio
+- `POST /migrate` - Migración completa a AWS
+- `POST /backup` - Backup manual a S3
+- `POST /sync/{table_name}` - Sincronización incremental
+- `GET /backups` - Listar backups disponibles
+- `GET /dynamodb/tables` - Listar tablas DynamoDB
+- `GET /dynamodb/{table_name}/items` - Obtener items DynamoDB
+
 ## Estructura del Proyecto
 
 ```
-proyecto/
+all-cloud-back-apis/
 ├── movies-api/                 # Next.js + MongoDB
 ├── rooms-api/                  # Python + MySQL
 ├── reservations-api/           # Java + PostgreSQL
 ├── gateway-api/                # Node.js Gateway
 ├── analytics-api/              # Node.js Analytics
+├── data-ingestion-service/     # Python + AWS 🆕
 ├── database-designs/           # Esquemas de BD
 ├── docker-compose.yml          # Orquestación Docker
+├── env.docker.example          # Variables de entorno AWS
 └── README.md                   # Este archivo
 ```
 
@@ -179,12 +214,15 @@ proyecto/
 - ✅ Al menos 2 tablas relacionadas en cada BD SQL
 - ✅ Comunicación entre microservicios
 - ✅ Documentación de estructuras de BD
+- ✅ **Integración con servicios de AWS** 🆕
 
 ### Tecnologías Utilizadas
 - **Frontend/API**: Next.js, Python Flask, Java Spring Boot, Node.js
 - **Bases de Datos**: MongoDB, MySQL, PostgreSQL
+- **AWS Services**: S3, DynamoDB, RDS 🆕
 - **Contenedores**: Docker, Docker Compose
 - **Comunicación**: HTTP REST APIs
+- **Orquestación**: Docker Compose
 
 ### Patrones Implementados
 - **Microservicios**: Separación de responsabilidades
@@ -192,6 +230,58 @@ proyecto/
 - **Event Sourcing**: Comunicación asíncrona
 - **CQRS**: Separación de comandos y consultas
 - **Circuit Breaker**: Manejo de fallos
+- **Data Lake**: Almacenamiento en AWS S3 🆕
+- **NoSQL**: Consultas rápidas con DynamoDB 🆕
+
+## Configuración AWS 🆕
+
+### Servicios Utilizados
+
+#### Amazon S3
+- **Bucket**: `cinema-data-bucket`
+- **Estructura**: `backups/`, `analytics/`
+- **Encriptación**: AES-256
+
+#### Amazon DynamoDB
+- **Tablas**:
+  - `cinema-movies`: Películas
+  - `cinema-rooms`: Salas
+  - `cinema-reservations`: Reservas
+  - `cinema-users`: Usuarios
+- **Índices**: Por género, tipo de pantalla, usuario, película
+
+#### Amazon RDS (Opcional)
+- **Motor**: PostgreSQL
+- **Propósito**: Analytics avanzados
+
+### Configuración Inicial
+
+```bash
+# 1. Configurar credenciales AWS
+export AWS_ACCESS_KEY_ID=your_key
+export AWS_SECRET_ACCESS_KEY=your_secret
+export AWS_REGION=us-east-1
+
+# 2. Configurar recursos AWS
+cd data-ingestion-service
+python scripts/setup_aws_resources.py
+
+# 3. Ejecutar migración inicial
+python main.py --mode migrate
+```
+
+### Migración de Datos
+
+```bash
+# Migración completa
+curl -X POST http://localhost:3006/migrate
+
+# Backup manual
+curl -X POST http://localhost:3006/backup
+
+# Sincronización incremental
+curl -X POST http://localhost:3006/sync/rooms
+```
 
 ## Monitoreo y Logs
 
@@ -200,19 +290,57 @@ proyecto/
 docker-compose logs -f
 
 # Ver logs de un servicio específico
-docker-compose logs -f movies-api
+docker-compose logs -f data-ingestion-service
 
 # Ver estado de los servicios
 docker-compose ps
+
+# Health check del servicio de ingesta
+curl http://localhost:3006/health
 ```
 
 ## Despliegue en AWS
 
 Para desplegar en AWS, cada microservicio puede ser containerizado y desplegado en:
-- **AWS ECS** para orquestación de contenedores
-- **AWS RDS** para bases de datos gestionadas
-- **AWS ELB** para balanceador de carga
-- **AWS CloudWatch** para monitoreo
+
+### Opción 1: AWS ECS + Fargate
+- **Contenedores**: ECS para orquestación
+- **Bases de datos**: RDS para SQL, DocumentDB para MongoDB
+- **Almacenamiento**: S3 para backups
+- **NoSQL**: DynamoDB para consultas rápidas
+
+### Opción 2: AWS EKS
+- **Kubernetes**: EKS para orquestación
+- **Ingress**: Application Load Balancer
+- **Monitoring**: CloudWatch y X-Ray
+
+### Opción 3: Serverless (AWS Lambda)
+- **API Gateway**: Endpoints REST
+- **Lambda**: Funciones serverless
+- **DynamoDB**: Base de datos serverless
+- **S3**: Almacenamiento serverless
+
+## Flujo de Datos 🆕
+
+```mermaid
+graph TD
+    A[Movies API] --> E[Data Ingestion Service]
+    B[Rooms API] --> E
+    C[Reservations API] --> E
+    D[Analytics API] --> E
+    
+    E --> F[Amazon S3]
+    E --> G[Amazon DynamoDB]
+    E --> H[Amazon RDS]
+    
+    F --> I[Backups & Analytics]
+    G --> J[Fast Queries]
+    H --> K[Complex Analytics]
+    
+    I --> L[Business Intelligence]
+    J --> M[Real-time Dashboards]
+    K --> N[Data Science]
+```
 
 ## Contribución
 
