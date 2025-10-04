@@ -6,9 +6,9 @@ const { Client } = require('pg');
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/cinema_movies';
 const MYSQL_CONFIG = {
     host: process.env.MYSQL_HOST || 'localhost',
-    port: parseInt(process.env.MYSQL_PORT) || 3306,
-    user: process.env.MYSQL_USER || 'root',
-    password: process.env.MYSQL_PASSWORD || 'password',
+    port: parseInt(process.env.MYSQL_PORT) || 3307,
+    user: process.env.MYSQL_USER || 'cinema_user',
+    password: process.env.MYSQL_PASSWORD || 'cinema_password',
     database: process.env.MYSQL_DATABASE || 'cinema_rooms'
 };
 const POSTGRES_CONFIG = {

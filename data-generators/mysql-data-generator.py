@@ -9,9 +9,9 @@ load_dotenv()
 # Configuración de conexión
 MYSQL_CONFIG = {
     'host': os.getenv('MYSQL_HOST', 'localhost'),
-    'port': int(os.getenv('MYSQL_PORT', 3306)),
-    'user': os.getenv('MYSQL_USER', 'root'),
-    'password': os.getenv('MYSQL_PASSWORD', 'password'),
+    'port': int(os.getenv('MYSQL_PORT', 3307)),
+    'user': os.getenv('MYSQL_USER', 'cinema_user'),
+    'password': os.getenv('MYSQL_PASSWORD', 'cinema_password'),
     'database': os.getenv('MYSQL_DATABASE', 'cinema_rooms')
 }
 

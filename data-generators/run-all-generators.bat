@@ -1,32 +1,55 @@
 @echo off
-echo 🚀 Iniciando generación de datos para microservicios de cine...
-echo ================================================================
+echo 🎬 GENERADOR DE DATOS - MICROSERVICIOS DE CINE
+echo ============================================
+echo.
 
 REM Verificar que las dependencias estén instaladas
-echo 📦 Verificando dependencias...
+echo � Verificando requisitos del sistema...
+
+REM Verificar Docker (recomendado)
+docker --version >nul 2>&1
+if errorlevel 1 (
+    echo ⚠️  Docker no está instalado (recomendado para bases de datos)
+    echo 💡 Puedes instalarlo desde https://docker.com
+) else (
+    echo ✅ Docker disponible
+    echo.
+    echo 🐳 ¿Quieres iniciar las bases de datos con Docker? (recomendado)
+    echo    Esto iniciará MongoDB, MySQL y PostgreSQL automáticamente
+    set /p docker_choice="Escribir 's' para usar Docker, o Enter para continuar: "
+    
+    if /i "!docker_choice!"=="s" (
+        echo.
+        echo 🚀 Iniciando bases de datos con Docker...
+        cd ..
+        docker-compose up -d mongodb mysql postgresql
+        cd data-generators
+        echo ✅ Bases de datos iniciadas
+        timeout /t 10 /nobreak >nul
+        echo.
+    )
+)
 
 REM Verificar Node.js
 node --version >nul 2>&1
 if errorlevel 1 (
     echo ❌ Node.js no está instalado
+    echo 💡 Instala Node.js desde https://nodejs.org
     pause
     exit /b 1
+) else (
+    echo ✅ Node.js disponible
 )
 
 REM Verificar Python
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo ❌ Python no está instalado
+    echo ❌ Python no está instalado  
+    echo 💡 Instala Python desde https://python.org
     pause
     exit /b 1
-)
-
-REM Verificar pip
-pip --version >nul 2>&1
-if errorlevel 1 (
-    echo ❌ pip no está instalado
-    pause
-    exit /b 1
+) else (
+    echo ✅ Python disponible
 )
 
 echo ✅ Dependencias verificadas

@@ -1,53 +1,252 @@
-# Generadores de Datos para Microservicios de Cine
+# 🎬 Generadores de Datos para Microservicios de Cine
 
-Scripts para generar 20,000 registros distribuidos entre las 3 bases de datos del sistema de cine.
+Scripts automáticos para poblar las bases de datos con datos realistas para testing y desarrollo.
 
-## Distribución de Datos
+## 📊 ¿Qué se Genera?
 
-### MongoDB (Movies API) - 8,000 registros
-- **8,000 películas** con datos realistas
-- **22 géneros** únicos
-- Datos incluyen: títulos, descripciones, duración, géneros, directores, actores, fechas de estreno, ratings, etc.
+| Base de Datos | Servicio | Registros | Descripción |
+|---------------|----------|-----------|-------------|
+| **MongoDB** | Movies API | ~8,000 | Películas realistas con géneros, directores, actores |
+| **MySQL** | Rooms API | ~12,000 | Salas, asientos y horarios de proyección |
+| **PostgreSQL** | Reservations API | ~15,000 | Usuarios, reservas y pagos del sistema |
 
-### MySQL (Rooms API) - 12,000 registros
-- **100 salas** con diferentes capacidades y tipos de pantalla
-- **~15,000 asientos** distribuidos en las salas
-- **12,000 horarios** de proyección con fechas y precios
+**Total: ~35,000 registros** con relaciones correctas entre las bases de datos.
 
-### PostgreSQL (Reservations API) - 15,000 registros
-- **2,000 usuarios** con datos personales
-- **15,000 reservas** con diferentes estados
-- **~45,000 asientos reservados** (1-6 asientos por reserva)
-- **15,000 pagos** asociados a las reservas
+---
 
-## Instalación
+## 🚀 Inicio Rápido (Opción 1: Todo Automático)
 
-### Node.js (MongoDB)
-```bash
-cd data-generators
-npm install
+### **Para Windows:**
+```cmd
+# 1. Iniciar las bases de datos con Docker
+docker-compose up -d mongodb mysql postgresql
+
+# 2. Ejecutar generador automático
+run-all-generators.bat
 ```
 
-### Python (MySQL y PostgreSQL)
+### **Para Linux/Mac:**
 ```bash
+# 1. Iniciar las bases de datos con Docker  
+docker-compose up -d mongodb mysql postgresql
+
+# 2. Ejecutar generador automático
+./run-all-generators.sh
+```
+
+---
+
+## 🛠️ Configuración Manual (Opción 2: Paso a Paso)
+
+### **Paso 1: Levantar las Bases de Datos**
+
+#### **Opción A: Con Docker (Recomendado)**
+```bash
+# Desde la raíz del proyecto
+docker-compose up -d mongodb mysql postgresql
+
+# Verificar que estén corriendo
+docker-compose ps
+```
+
+#### **Opción B: Instalación Local**
+- **MongoDB**: Puerto 27017
+- **MySQL**: Puerto 3307, usuario: `cinema_user`, password: `cinema_password`
+- **PostgreSQL**: Puerto 5432, usuario: `cinema_user`, password: `cinema_password`
+
+### **Paso 2: Instalar Dependencias**
+
+```bash
+cd data-generators
+
+# Dependencias de Node.js (para MongoDB)
+npm install
+
+# Dependencias de Python (para MySQL y PostgreSQL)
 pip install -r requirements.txt
 ```
 
-## Configuración
+### **Paso 3: Configurar Variables de Entorno**
 
-1. Copiar archivo de configuración:
-```bash
-cp .env.example .env
-```
+El archivo `.env` ya está configurado para Docker, pero puedes editarlo si necesitas:
 
-2. Configurar variables de entorno en `.env`:
 ```env
 # MongoDB
 MONGODB_URI=mongodb://localhost:27017/cinema_movies
 
-# MySQL
+# MySQL  
 MYSQL_HOST=localhost
-MYSQL_PORT=3306
+MYSQL_PORT=3307
+MYSQL_USER=cinema_user
+MYSQL_PASSWORD=cinema_password
+MYSQL_DATABASE=cinema_rooms
+
+# PostgreSQL
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=cinema_user
+POSTGRES_PASSWORD=cinema_password
+POSTGRES_DATABASE=cinema_reservations
+```
+
+---
+
+## 🎯 Ejecutar Generadores
+
+### **Opción 1: Todos a la vez (Recomendado)**
+```bash
+# Windows
+run-all-generators.bat
+
+# Linux/Mac
+./run-all-generators.sh
+```
+
+### **Opción 2: Individual**
+```bash
+# MongoDB (Películas y géneros)
+node mongodb-data-generator.js
+
+# MySQL (Salas, asientos, horarios)
+python mysql-data-generator.py
+
+# PostgreSQL (Usuarios, reservas, pagos)  
+python postgresql-data-generator.py
+```
+
+### **Verificar Datos Generados**
+```bash
+node verify-data.js
+```
+
+---
+
+## 📋 Configuración de Docker Compose
+
+Las credenciales están configuradas según tu `docker-compose.yml`:
+
+```yaml
+# MySQL
+MYSQL_USER: cinema_user
+MYSQL_PASSWORD: cinema_password  
+MYSQL_DATABASE: cinema_rooms
+Port: 3307 → 3306
+
+# PostgreSQL
+POSTGRES_USER: cinema_user
+POSTGRES_PASSWORD: cinema_password
+POSTGRES_DB: cinema_reservations  
+Port: 5432 → 5432
+
+# MongoDB
+MONGO_INITDB_DATABASE: cinema_movies
+Port: 27017 → 27017
+```
+
+---
+
+## 🔍 Verificar Conexiones
+
+### **Conectar a las Bases de Datos:**
+
+```bash
+# MongoDB
+mongosh mongodb://localhost:27017/cinema_movies
+
+# MySQL
+mysql -h localhost -P 3307 -u cinema_user -p cinema_rooms
+
+# PostgreSQL  
+psql -h localhost -p 5432 -U cinema_user -d cinema_reservations
+```
+
+---
+
+## ❗ Solución de Problemas
+
+### **Error: Conexión Rechazada**
+```
+✅ Verificar que Docker esté corriendo: docker-compose ps
+✅ Reiniciar contenedores: docker-compose restart
+✅ Ver logs: docker-compose logs [servicio]
+```
+
+### **Error: Dependencias Faltantes**
+```bash
+# Para Python
+pip install -r requirements.txt
+
+# Para Node.js  
+npm install
+```
+
+### **Error: Puerto en Uso**
+```
+✅ Cambiar puertos en docker-compose.yml
+✅ O detener servicios: docker-compose down
+```
+
+### **Error: Datos Ya Existen**
+```bash
+# Limpiar bases de datos
+docker-compose down -v  # Elimina volúmenes
+docker-compose up -d    # Recrea contenedores
+```
+
+---
+
+## 📁 Estructura de Archivos
+
+```
+data-generators/
+├── mongodb-data-generator.js     # Genera películas y géneros
+├── mysql-data-generator.py       # Genera salas, asientos, horarios  
+├── postgresql-data-generator.py  # Genera usuarios, reservas, pagos
+├── verify-data.js               # Verifica que los datos estén OK
+├── run-all-generators.bat       # Script automático (Windows)
+├── run-all-generators.sh        # Script automático (Linux/Mac)
+├── package.json                 # Dependencias Node.js
+├── requirements.txt             # Dependencias Python
+├── .env                         # Configuración de conexiones
+└── README.md                    # Este archivo
+```
+
+---
+
+## 🎬 Datos Generados en Detalle
+
+### **MongoDB - Movies API**
+- ✅ **Géneros**: Action, Comedy, Drama, Horror, etc.
+- ✅ **Películas**: Títulos, descripciones, directores, actores, ratings
+- ✅ **Fechas**: Fechas de estreno realistas (1980-2024)
+- ✅ **Relaciones**: Películas asignadas a géneros
+
+### **MySQL - Rooms API**  
+- ✅ **Salas**: Nombres únicos, capacidades, tipos de pantalla
+- ✅ **Asientos**: Filas/columnas, tipos (regular/premium/vip)
+- ✅ **Horarios**: Fechas futuras, precios variables por tipo de sala
+
+### **PostgreSQL - Reservations API**
+- ✅ **Usuarios**: Nombres, emails únicos, teléfonos
+- ✅ **Reservas**: Estados realistas, referencias a movies/schedules
+- ✅ **Pagos**: Métodos diversos, estados de pago
+- ✅ **Asientos Reservados**: 1-6 asientos por reserva
+
+---
+
+## 🔗 Integración con APIs
+
+Después de generar los datos, puedes:
+
+1. **Iniciar todas las APIs**: `docker-compose up`
+2. **Probar endpoints**: 
+   - Movies API: http://localhost:3001/api/movies
+   - Rooms API: http://localhost:3002/api/rooms
+   - Reservations API: http://localhost:3003/api/reservations
+3. **Gateway API**: http://localhost:3004 (orquesta todo)
+4. **Analytics API**: http://localhost:3005/api/analytics
+
+¡Listo para usar tu sistema de cine con datos realistas! 🎉
 MYSQL_USER=root
 MYSQL_PASSWORD=password
 MYSQL_DATABASE=cinema_rooms
