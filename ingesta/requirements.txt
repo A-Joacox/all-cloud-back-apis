@@ -1,0 +1,20 @@
+# Dependencias principales para el sistema de ingesta
+# Instalar con: pip install -r requirements.txt
+
+# Para conexiones a bases de datos
+psycopg2-binary==2.9.7    # PostgreSQL
+pymongo==4.5.0             # MongoDB  
+mysql-connector-python==8.1.0  # MySQL (alternativa a la que ya tienes)
+
+# Para procesamiento de datos
+pandas==2.1.1
+
+# Para AWS S3
+boto3==1.28.62
+botocore==1.31.62
+
+# Para configuración
+python-dotenv==1.0.0
+
+# Nota: Cada subcarpeta tiene su propio requirements.txt específico
+# Este archivo es para instalar todas las dependencias de una vez
