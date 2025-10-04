@@ -25,6 +25,51 @@ ROOM_NAMES = [
     'Sala Norte', 'Sala Sur', 'Sala Este', 'Sala Oeste', 'Sala Central'
 ]
 
+def create_tables_if_not_exist(cursor):
+    """Crear tablas si no existen"""
+    print("🔧 Verificando y creando tablas si es necesario...")
+    
+    # Tabla rooms
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS rooms (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE,
+            capacity INT NOT NULL,
+            screen_type VARCHAR(50) NOT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # Tabla seats
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS seats (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            room_id INT NOT NULL,
+            row_number VARCHAR(10) NOT NULL,
+            seat_number INT NOT NULL,
+            seat_type VARCHAR(50) NOT NULL DEFAULT 'regular',
+            is_available BOOLEAN DEFAULT TRUE,
+            FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+            UNIQUE KEY unique_seat (room_id, row_number, seat_number)
+        )
+    """)
+    
+    # Tabla schedules
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS schedules (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            room_id INT NOT NULL,
+            movie_id VARCHAR(100) NOT NULL,
+            show_time DATETIME NOT NULL,
+            price DECIMAL(10,2) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
+        )
+    """)
+    
+    print("✅ Tablas verificadas/creadas correctamente")
+
 def generate_room():
     return {
         'name': random.choice(ROOM_NAMES) + f" {random.randint(1, 50)}",
@@ -82,6 +127,10 @@ def generate_data():
         connection = mysql.connector.connect(**MYSQL_CONFIG)
         cursor = connection.cursor()
         print("Conectado a MySQL")
+        
+        # Crear tablas si no existen
+        create_tables_if_not_exist(cursor)
+        connection.commit()
         
         # Insertar salas
         print("Generando salas...")

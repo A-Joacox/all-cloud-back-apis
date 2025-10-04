@@ -63,6 +63,28 @@ echo 📦 Instalando dependencias de Python...
 pip install -r requirements.txt
 
 echo.
+echo 🔍 Probando conexiones a bases de datos...
+echo =============================================
+python test-connections.py
+
+REM Verificar si las conexiones fallaron
+if errorlevel 1 (
+    echo.
+    echo ❌ Algunas bases de datos no están disponibles
+    echo 💡 ¿Quieres continuar de todas formas? (s/N)
+    set /p continue_choice=""
+    
+    if /i not "!continue_choice!"=="s" (
+        echo.
+        echo 🛑 Operación cancelada
+        echo 💡 Inicia las bases de datos y vuelve a intentar:
+        echo    docker-compose up -d mongodb mysql postgresql
+        pause
+        exit /b 1
+    )
+)
+
+echo.
 echo 🗄️  Generando datos para MongoDB...
 echo ==================================
 node mongodb-data-generator.js

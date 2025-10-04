@@ -30,12 +30,68 @@ LAST_NAMES = [
     'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin',
     'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark',
     'Ramirez', 'Lewis', 'Robinson', 'Walker', 'Young', 'Allen', 'King',
-    'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores'
+    'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores', 'Pork'
 ]
 
 PAYMENT_METHODS = ['credit_card', 'debit_card', 'paypal', 'cash', 'bank_transfer']
 PAYMENT_STATUSES = ['PENDING', 'COMPLETED', 'FAILED', 'REFUNDED']
 RESERVATION_STATUSES = ['PENDING', 'CONFIRMED', 'CANCELLED', 'EXPIRED']
+
+def create_tables_if_not_exist(cursor):
+    """Crear tablas si no existen"""
+    print("🔧 Verificando y creando tablas si es necesario...")
+    
+    # Tabla users
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            phone VARCHAR(20),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
+    # Tabla reservations
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS reservations (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            schedule_id INTEGER NOT NULL,
+            movie_id VARCHAR(100) NOT NULL,
+            total_amount DECIMAL(10,2) NOT NULL,
+            status VARCHAR(20) DEFAULT 'PENDING',
+            reservation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    """)
+    
+    # Tabla reserved_seats
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS reserved_seats (
+            id SERIAL PRIMARY KEY,
+            reservation_id INTEGER NOT NULL,
+            seat_id INTEGER NOT NULL,
+            FOREIGN KEY (reservation_id) REFERENCES reservations(id) ON DELETE CASCADE
+        )
+    """)
+    
+    # Tabla payments
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS payments (
+            id SERIAL PRIMARY KEY,
+            reservation_id INTEGER NOT NULL,
+            amount DECIMAL(10,2) NOT NULL,
+            payment_method VARCHAR(50) NOT NULL,
+            payment_status VARCHAR(20) DEFAULT 'PENDING',
+            transaction_id VARCHAR(255),
+            payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (reservation_id) REFERENCES reservations(id) ON DELETE CASCADE
+        )
+    """)
+    
+    print("✅ Tablas verificadas/creadas correctamente")
 
 def generate_user():
     """Genera un usuario"""
@@ -92,6 +148,10 @@ def generate_data():
         connection = psycopg2.connect(**POSTGRES_CONFIG)
         cursor = connection.cursor()
         print("Conectado a PostgreSQL")
+        
+        # Crear tablas si no existen
+        create_tables_if_not_exist(cursor)
+        connection.commit()
         
         print("Generando usuarios...")
         users = [generate_user() for _ in range(2000)]
