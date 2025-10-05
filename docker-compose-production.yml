@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # Movies API (Next.js + MongoDB remoto)
+  movies-api:
+    build:
+      context: ./movies-api
+      dockerfile: Dockerfile
+    container_name: cinema_movies_api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      MONGODB_URI: mongodb://172.31.90.23:27017/cinema_movies
+      PORT: 3001
+      NODE_ENV: production
+    networks:
+      - cinema_network
+
+  # Rooms API (Python + MySQL remoto)
+  rooms-api:
+    build:
+      context: ./rooms-api
+      dockerfile: Dockerfile
+    container_name: cinema_rooms_api
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      MYSQL_HOST: 172.31.90.23
+      MYSQL_PORT: 3307
+      MYSQL_USER: cinema_user
+      MYSQL_PASSWORD: cinema_password
+      MYSQL_DATABASE: cinema_rooms
+      FLASK_ENV: production
+      PORT: 3002
+    networks:
+      - cinema_network
+
+  # Reservations API (Java + PostgreSQL remoto)
+  reservations-api:
+    build:
+      context: ./reservations-api
+      dockerfile: Dockerfile
+    container_name: cinema_reservations_api
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      DB_USERNAME: cinema_user
+      DB_PASSWORD: cinema_password
+      SPRING_DATASOURCE_URL: jdbc:postgresql://172.31.90.23:5432/cinema_reservations
+    networks:
+      - cinema_network
+
+  # Gateway API (Orquestador)
+  gateway-api:
+    build:
+      context: ./gateway-api
+      dockerfile: Dockerfile
+    container_name: cinema_gateway_api
+    restart: unless-stopped
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: 3004
+      MOVIES_API_URL: http://movies-api:3001
+      ROOMS_API_URL: http://rooms-api:3002
+      RESERVATIONS_API_URL: http://reservations-api:3003
+      NODE_ENV: production
+    depends_on:
+      - movies-api
+      - rooms-api
+      - reservations-api
+    networks:
+      - cinema_network
+
+  # Analytics API
+  analytics-api:
+    build:
+      context: ./analytics-api
+      dockerfile: Dockerfile
+    container_name: cinema_analytics_api
+    restart: unless-stopped
+    ports:
+      - "3005:3005"
+    environment:
+      PORT: 3005
+      MOVIES_API_URL: http://movies-api:3001
+      ROOMS_API_URL: http://rooms-api:3002
+      RESERVATIONS_API_URL: http://reservations-api:3003
+      NODE_ENV: production
+    depends_on:
+      - movies-api
+      - rooms-api
+      - reservations-api
+    networks:
+      - cinema_network
+
+networks:
+  cinema_network:
+    driver: bridge

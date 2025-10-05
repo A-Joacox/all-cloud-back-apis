@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # MongoDB para Movies API
+  mongodb:
+    image: mongo:7.0
+    container_name: cinema_mongodb
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:27017:27017"  # ✅ Cambio: Escuchar en todas las interfaces
+    environment:
+      MONGO_INITDB_DATABASE: cinema_movies
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - cinema_network
+
+  # MySQL para Rooms API
+  mysql:
+    image: mysql:8.0
+    container_name: cinema_mysql
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:3307:3306"  # ✅ Cambio: Escuchar en todas las interfaces
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: cinema_rooms
+      MYSQL_USER: cinema_user
+      MYSQL_PASSWORD: cinema_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database-designs/mysql-schema.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - cinema_network
+
+  # PostgreSQL para Reservations API
+  postgresql:
+    image: postgres:15
+    container_name: cinema_postgresql
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:5432:5432"  # ✅ Cambio: Escuchar en todas las interfaces
+    environment:
+      POSTGRES_DB: cinema_reservations
+      POSTGRES_USER: cinema_user
+      POSTGRES_PASSWORD: cinema_password
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+      - ./database-designs/postgresql-schema.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - cinema_network
+
+volumes:
+  mongodb_data:
+  mysql_data:
+  postgresql_data:
+
+networks:
+  cinema_network:
+    driver: bridge
