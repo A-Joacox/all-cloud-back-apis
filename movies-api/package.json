@@ -15,7 +15,9 @@
     "react-dom": "^18.0.0",
     "mongoose": "^8.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-react": "^5.10.3"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

@@ -5,11 +5,111 @@ from marshmallow import Schema, fields, ValidationError
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+from flasgger import Swagger, swag_from
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+# Configuración de Swagger
+swagger_config = {
+    "headers": [],
+    "specs": [
+        {
+            "endpoint": 'apispec_1',
+            "route": '/apispec_1.json',
+            "rule_filter": lambda rule: True,
+            "model_filter": lambda tag: True,
+        }
+    ],
+    "static_url_path": "/flasgger_static",
+    "swagger_ui": True,
+    "specs_route": "/docs"
+}
+
+swagger_template = {
+    "swagger": "2.0",
+    "info": {
+        "title": "Rooms API",
+        "description": "Cinema Rooms Microservice - MySQL based API for managing cinema rooms, seats and schedules",
+        "version": "1.0.0",
+        "contact": {
+            "name": "Cinema API Team",
+            "email": "api@cinema.com"
+        }
+    },
+    "host": "localhost:3002",
+    "basePath": "/",
+    "schemes": ["http"],
+    "consumes": ["application/json"],
+    "produces": ["application/json"],
+    "tags": [
+        {
+            "name": "Rooms",
+            "description": "Room management operations"
+        },
+        {
+            "name": "Seats",
+            "description": "Seat management operations"
+        },
+        {
+            "name": "Schedules",
+            "description": "Schedule management operations"
+        },
+        {
+            "name": "Health",
+            "description": "Health check operations"
+        }
+    ],
+    "definitions": {
+        "Room": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "name": {"type": "string", "example": "Sala Principal"},
+                "capacity": {"type": "integer", "example": 150},
+                "screen_type": {"type": "string", "enum": ["2D", "3D", "IMAX"], "example": "2D"},
+                "is_active": {"type": "boolean", "example": True},
+                "created_at": {"type": "string", "format": "date-time"},
+                "updated_at": {"type": "string", "format": "date-time"}
+            }
+        },
+        "Seat": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "room_id": {"type": "integer", "example": 1},
+                "row_number": {"type": "string", "example": "A"},
+                "seat_number": {"type": "integer", "example": 1},
+                "seat_type": {"type": "string", "enum": ["regular", "premium", "vip"], "example": "regular"},
+                "is_available": {"type": "boolean", "example": True}
+            }
+        },
+        "Schedule": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer", "example": 1},
+                "room_id": {"type": "integer", "example": 1},
+                "movie_id": {"type": "string", "example": "507f1f77bcf86cd799439011"},
+                "show_time": {"type": "string", "format": "date-time"},
+                "price": {"type": "number", "example": 12.50},
+                "is_active": {"type": "boolean", "example": True}
+            }
+        },
+        "ApiResponse": {
+            "type": "object",
+            "properties": {
+                "success": {"type": "boolean"},
+                "data": {"type": "object"},
+                "message": {"type": "string"},
+                "error": {"type": "string"}
+            }
+        }
+    }
+}
+
+swagger = Swagger(app, config=swagger_config, template=swagger_template)
 
 # Configuración de la base de datos
 app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@{os.getenv('MYSQL_HOST')}:{os.getenv('MYSQL_PORT')}/{os.getenv('MYSQL_DATABASE')}"
@@ -84,6 +184,30 @@ schedules_schema = ScheduleSchema(many=True)
 
 # Rutas para Salas
 @app.route('/api/rooms', methods=['GET'])
+@swag_from({
+    'tags': ['Rooms'],
+    'summary': 'Get all active rooms',
+    'description': 'Retrieve a list of all active cinema rooms',
+    'responses': {
+        200: {
+            'description': 'List of rooms retrieved successfully',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'success': {'type': 'boolean', 'example': True},
+                    'data': {
+                        'type': 'array',
+                        'items': {'$ref': '#/definitions/Room'}
+                    }
+                }
+            }
+        },
+        500: {
+            'description': 'Internal server error',
+            'schema': {'$ref': '#/definitions/ApiResponse'}
+        }
+    }
+})
 def get_rooms():
     try:
         rooms = Room.query.filter_by(is_active=True).all()

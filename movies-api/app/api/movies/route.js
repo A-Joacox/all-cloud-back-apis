@@ -2,6 +2,77 @@ import { NextResponse } from 'next/server';
 import connectDB from '../../../lib/mongodb';
 import Movie from '../../../models/Movie';
 
+/**
+ * @swagger
+ * /api/movies:
+ *   get:
+ *     tags: [Movies]
+ *     summary: Get all movies
+ *     description: Retrieve a paginated list of movies with optional filtering
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: genre
+ *         schema:
+ *           type: string
+ *         description: Filter by genre
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Text search in movie titles and descriptions
+ *       - in: query
+ *         name: featured
+ *         schema:
+ *           type: boolean
+ *         description: Filter featured movies (rating >= 7)
+ *     responses:
+ *       200:
+ *         description: List of movies retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Movie'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     total:
+ *                       type: integer
+ *                     pages:
+ *                       type: integer
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ */
 // GET /api/movies - Listar películas
 export async function GET(request) {
   try {

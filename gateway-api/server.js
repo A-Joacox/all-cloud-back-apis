@@ -3,6 +3,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const axios = require('axios');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./swagger.config');
 require('dotenv').config();
 
 const app = express();
@@ -13,6 +15,13 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json());
+
+// Swagger UI setup
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: "Cinema Gateway API Documentation"
+}));
 
 // URLs de los microservicios
 const MOVIES_API_URL = process.env.MOVIES_API_URL || 'http://localhost:3001';
@@ -42,7 +51,31 @@ const makeRequest = async (url, method = 'GET', data = null) => {
   }
 };
 
-// Health check
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Gateway health check
+ *     description: Check if the API Gateway is healthy and responsive
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Gateway is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: healthy
+ *                 service:
+ *                   type: string
+ *                   example: gateway-api
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ */
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'healthy', 
@@ -53,7 +86,44 @@ app.get('/health', (req, res) => {
 
 // ===== ENDPOINTS ORQUESTADOS =====
 
-// GET /api/showtimes - Obtener horarios completos con información de películas y salas
+/**
+ * @swagger
+ * /api/showtimes:
+ *   get:
+ *     summary: Get enriched showtimes
+ *     description: Retrieve showtimes with complete movie and room information (orchestrated from multiple services)
+ *     tags: [System]
+ *     parameters:
+ *       - in: query
+ *         name: movieId
+ *         schema:
+ *           type: string
+ *         description: Filter by movie ID
+ *       - in: query
+ *         name: roomId
+ *         schema:
+ *           type: integer
+ *         description: Filter by room ID
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter by date (YYYY-MM-DD)
+ *     responses:
+ *       200:
+ *         description: Enriched showtimes retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       500:
+ *         description: Service error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 app.get('/api/showtimes', async (req, res) => {
   try {
     const { movieId, roomId, date } = req.query;
@@ -108,7 +178,64 @@ app.get('/api/showtimes', async (req, res) => {
   }
 });
 
-// POST /api/book-ticket - Reservar ticket (orquesta reservas, salas, películas)
+/**
+ * @swagger
+ * /api/book-ticket:
+ *   post:
+ *     summary: Book a movie ticket
+ *     description: Complete ticket booking orchestration across reservations, rooms, and movies services
+ *     tags: [System]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - scheduleId
+ *               - movieId
+ *               - seatIds
+ *               - totalAmount
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: User ID
+ *               scheduleId:
+ *                 type: integer
+ *                 description: Schedule ID
+ *               movieId:
+ *                 type: string
+ *                 description: Movie ID (MongoDB ObjectId)
+ *               seatIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of seat IDs to book
+ *               totalAmount:
+ *                 type: number
+ *                 format: float
+ *                 description: Total booking amount
+ *     responses:
+ *       201:
+ *         description: Ticket booked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Service error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 app.post('/api/book-ticket', async (req, res) => {
   try {
     const { userId, scheduleId, movieId, seatIds, totalAmount } = req.body;
@@ -261,7 +388,32 @@ app.get('/api/movie-details/:movieId', async (req, res) => {
 
 // ===== PROXY ENDPOINTS =====
 
-// Proxy para Movies API
+/**
+ * @swagger
+ * /api/movies:
+ *   get:
+ *     summary: Proxy to Movies API
+ *     description: Forward all movie-related requests to the Movies microservice
+ *     tags: [Movies]
+ *     responses:
+ *       200:
+ *         description: Successful proxy response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       500:
+ *         description: Service error
+ *   post:
+ *     summary: Proxy to Movies API
+ *     description: Forward all movie-related requests to the Movies microservice
+ *     tags: [Movies]
+ *     responses:
+ *       200:
+ *         description: Successful proxy response
+ *       500:
+ *         description: Service error
+ */
 app.use('/api/movies', async (req, res) => {
   try {
     const url = `${MOVIES_API_URL}/api/movies${req.url}`;

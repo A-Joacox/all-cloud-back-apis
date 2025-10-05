@@ -15,6 +15,8 @@
     "helmet": "^7.1.0",
     "morgan": "^1.10.0",
     "moment": "^2.29.4",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
   }
 }

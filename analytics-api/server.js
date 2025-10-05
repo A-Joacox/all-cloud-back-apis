@@ -5,6 +5,8 @@ const morgan = require('morgan');
 const axios = require('axios');
 const moment = require('moment');
 const _ = require('lodash');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./swagger.config');
 require('dotenv').config();
 
 const app = express();
@@ -15,6 +17,13 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json());
+
+// Swagger UI setup
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: "Cinema Analytics API Documentation"
+}));
 
 // URLs de los microservicios
 const MOVIES_API_URL = process.env.MOVIES_API_URL || 'http://localhost:3001';
@@ -44,7 +53,31 @@ const makeRequest = async (url, method = 'GET', data = null) => {
   }
 };
 
-// Health check
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Analytics service health check
+ *     description: Check if the Analytics API is healthy and responsive
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: Service is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: healthy
+ *                 service:
+ *                   type: string
+ *                   example: analytics-api
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ */
 app.get('/health', (req, res) => {
   res.json({ 
     status: 'healthy', 
@@ -55,7 +88,52 @@ app.get('/health', (req, res) => {
 
 // ===== ANÁLISIS DE INGRESOS =====
 
-// GET /api/analytics/revenue - Análisis de ingresos
+/**
+ * @swagger
+ * /api/analytics/revenue:
+ *   get:
+ *     summary: Revenue analytics
+ *     description: Get comprehensive revenue analysis with breakdown by movies, rooms, and time periods
+ *     tags: [Revenue Analytics]
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [day, week, month, year]
+ *           default: month
+ *         description: Analysis time period
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date for custom period (YYYY-MM-DD)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date for custom period (YYYY-MM-DD)
+ *     responses:
+ *       200:
+ *         description: Revenue analytics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/AnalyticsResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/RevenueStats'
+ *       500:
+ *         description: Service error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 app.get('/api/analytics/revenue', async (req, res) => {
   try {
     const { period = 'month', startDate, endDate } = req.query;
@@ -141,7 +219,50 @@ app.get('/api/analytics/revenue', async (req, res) => {
 
 // ===== PELÍCULAS MÁS POPULARES =====
 
-// GET /api/analytics/popular-movies - Películas más populares
+/**
+ * @swagger
+ * /api/analytics/popular-movies:
+ *   get:
+ *     summary: Popular movies analytics
+ *     description: Get the most popular movies based on bookings, revenue, and ratings
+ *     tags: [Movie Analytics]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 50
+ *           default: 10
+ *         description: Number of movies to return
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [week, month, quarter, year]
+ *           default: month
+ *         description: Time period for analysis
+ *     responses:
+ *       200:
+ *         description: Popular movies retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/AnalyticsResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/MovieStats'
+ *       500:
+ *         description: Service error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 app.get('/api/analytics/popular-movies', async (req, res) => {
   try {
     const { limit = 10, period = 'month' } = req.query;
@@ -208,7 +329,43 @@ app.get('/api/analytics/popular-movies', async (req, res) => {
 
 // ===== OCUPACIÓN DE SALAS =====
 
-// GET /api/analytics/occupancy - Ocupación de salas
+/**
+ * @swagger
+ * /api/analytics/occupancy:
+ *   get:
+ *     summary: Room occupancy analytics
+ *     description: Get detailed room occupancy and utilization statistics
+ *     tags: [Room Analytics]
+ *     parameters:
+ *       - in: query
+ *         name: roomId
+ *         schema:
+ *           type: integer
+ *         description: Filter by specific room ID
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [day, week, month]
+ *           default: week
+ *         description: Analysis period
+ *     responses:
+ *       200:
+ *         description: Occupancy data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/AnalyticsResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/RoomUtilization'
+ *       500:
+ *         description: Service error
+ */
 app.get('/api/analytics/occupancy', async (req, res) => {
   try {
     const { period = 'week', roomId } = req.query;
@@ -325,7 +482,42 @@ app.get('/api/analytics/occupancy', async (req, res) => {
 
 // ===== COMPORTAMIENTO DE USUARIOS =====
 
-// GET /api/analytics/user-behavior - Comportamiento de usuarios
+/**
+ * @swagger
+ * /api/analytics/user-behavior:
+ *   get:
+ *     summary: User behavior analytics
+ *     description: Analyze user engagement patterns, booking behaviors, and preferences
+ *     tags: [User Analytics]
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [week, month, quarter, year]
+ *           default: month
+ *         description: Analysis time period
+ *       - in: query
+ *         name: includeInactive
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Include inactive users in analysis
+ *     responses:
+ *       200:
+ *         description: User behavior analytics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/AnalyticsResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/UserAnalytics'
+ *       500:
+ *         description: Service error
+ */
 app.get('/api/analytics/user-behavior', async (req, res) => {
   try {
     const { period = 'month' } = req.query;
@@ -415,7 +607,42 @@ app.get('/api/analytics/user-behavior', async (req, res) => {
 
 // ===== MÉTRICAS GENERALES =====
 
-// GET /api/analytics/dashboard - Dashboard con métricas generales
+/**
+ * @swagger
+ * /api/analytics/dashboard:
+ *   get:
+ *     summary: Analytics dashboard
+ *     description: Get comprehensive business intelligence dashboard with key metrics and insights
+ *     tags: [Reports]
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [today, week, month, quarter, year]
+ *           default: month
+ *         description: Dashboard time period
+ *       - in: query
+ *         name: includeForecasts
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Include predictive forecasts in dashboard
+ *     responses:
+ *       200:
+ *         description: Dashboard data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/AnalyticsResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       $ref: '#/components/schemas/BusinessReport'
+ *       500:
+ *         description: Service error
+ */
 app.get('/api/analytics/dashboard', async (req, res) => {
   try {
     const { period = 'month' } = req.query;

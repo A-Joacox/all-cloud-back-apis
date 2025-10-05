@@ -10,26 +10,31 @@ Sistema completo de microservicios para gestión de un cine, implementado con di
    - Puerto: 3001
    - Gestión de películas y géneros
    - Base de datos: MongoDB
+   - **📚 Documentación API**: `http://localhost:3001/docs`
 
 2. **Rooms API** (Python + MySQL)
    - Puerto: 3002
    - Gestión de salas, asientos y horarios
    - Base de datos: MySQL
+   - **📚 Documentación API**: `http://localhost:3002/docs`
 
 3. **Reservations API** (Java + PostgreSQL)
    - Puerto: 3003
    - Gestión de reservas, usuarios y pagos
    - Base de datos: PostgreSQL
+   - **📚 Documentación API**: `http://localhost:3003/docs`
 
 4. **Gateway API** (Node.js)
    - Puerto: 3004
    - Orquestador que consume otros microservicios
    - Endpoints unificados
+   - **📚 Documentación API**: `http://localhost:3004/docs`
 
 5. **Analytics API** (Node.js)
    - Puerto: 3005
    - Análisis de datos y métricas
    - Reportes y estadísticas
+   - **📚 Documentación API**: `http://localhost:3005/docs`
 
 ## Bases de Datos
 
@@ -47,6 +52,63 @@ Sistema completo de microservicios para gestión de un cine, implementado con di
 - **Base de datos**: `cinema_reservations`
 - **Tablas**: `users`, `reservations`, `reserved_seats`, `payments`
 - **Relaciones**: 1:N entre users-reservations, reservations-reserved_seats, 1:1 entre reservations-payments
+
+## 📚 Documentación API con Swagger UI
+
+Todos los microservicios incluyen documentación interactiva completa con **Swagger UI** accesible en el endpoint `/docs`:
+
+### 🎯 URLs de Documentación
+
+| Microservicio | URL de Documentación | Tecnología Swagger |
+|---------------|---------------------|-------------------|
+| **Movies API** | `http://localhost:3001/docs` | swagger-jsdoc + swagger-ui-react |
+| **Rooms API** | `http://localhost:3002/docs` | Flasgger (Flask-Swagger) |
+| **Reservations API** | `http://localhost:3003/docs` | SpringDoc OpenAPI 3 |
+| **Gateway API** | `http://localhost:3004/docs` | swagger-jsdoc + swagger-ui-express |
+| **Analytics API** | `http://localhost:3005/docs` | swagger-jsdoc + swagger-ui-express |
+
+### ✨ Características de la Documentación
+
+- **🔄 Interfaz Interactiva**: Prueba endpoints directamente desde el navegador
+- **📋 Esquemas Completos**: Modelos de datos detallados para requests/responses
+- **🏷️ Organización por Tags**: Endpoints agrupados lógicamente
+- **📊 Ejemplos en Vivo**: Datos de ejemplo para cada endpoint
+- **🚀 Try It Out**: Ejecuta requests reales con parámetros personalizables
+- **📖 Descripciones Detalladas**: Documentación completa de cada operación
+
+### 🛠️ Implementación Técnica
+
+#### Next.js (Movies API)
+```javascript
+// swagger.config.js - Configuración OpenAPI 3.0
+// app/docs/page.js - Componente React con SwaggerUI
+```
+
+#### Python Flask (Rooms API)
+```python
+# Flasgger con plantillas Swagger
+# @swag_from decorators para endpoints
+```
+
+#### Java Spring Boot (Reservations API)
+```java
+// SpringDoc OpenAPI con anotaciones @Operation
+// SwaggerConfig.java para configuración personalizada
+```
+
+#### Node.js Express (Gateway & Analytics)
+```javascript
+// swagger-jsdoc para generar especificación
+// swagger-ui-express para interfaz web
+```
+
+### 🎮 Cómo Usar la Documentación
+
+1. **Inicia el microservicio** que deseas explorar
+2. **Navega a** `http://localhost:[PUERTO]/docs`
+3. **Explora endpoints** organizados por categorías
+4. **Prueba requests** usando "Try it out"
+5. **Revisa responses** y códigos de estado
 
 ## Instalación y Ejecución
 
@@ -205,6 +267,31 @@ docker-compose logs -f movies-api
 # Ver estado de los servicios
 docker-compose ps
 ```
+
+## 🚀 Accesos Rápidos
+
+Una vez que todos los servicios estén ejecutándose, puedes acceder a:
+
+### 📋 Documentación Swagger UI
+- **Movies API**: [http://localhost:3001/docs](http://localhost:3001/docs)
+- **Rooms API**: [http://localhost:3002/docs](http://localhost:3002/docs)  
+- **Reservations API**: [http://localhost:3003/docs](http://localhost:3003/docs)
+- **Gateway API**: [http://localhost:3004/docs](http://localhost:3004/docs)
+- **Analytics API**: [http://localhost:3005/docs](http://localhost:3005/docs)
+
+### 🔍 Health Checks
+- **Movies API**: [http://localhost:3001/health](http://localhost:3001/health)
+- **Rooms API**: [http://localhost:3002/health](http://localhost:3002/health)
+- **Reservations API**: [http://localhost:3003/health](http://localhost:3003/health) 
+- **Gateway API**: [http://localhost:3004/health](http://localhost:3004/health)
+- **Analytics API**: [http://localhost:3005/health](http://localhost:3005/health)
+
+### 📊 Endpoints Principales
+- **Películas**: `GET http://localhost:3001/api/movies`
+- **Salas**: `GET http://localhost:3002/api/rooms`
+- **Reservas**: `GET http://localhost:3003/api/reservations`
+- **Horarios Orchestados**: `GET http://localhost:3004/api/showtimes`
+- **Analytics Dashboard**: `GET http://localhost:3005/api/analytics/dashboard`
 
 ## Despliegue en AWS
 
