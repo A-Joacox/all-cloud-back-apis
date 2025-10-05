@@ -16,4 +16,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     
     @Query("SELECT r FROM Reservation r WHERE r.user.id = :userId ORDER BY r.reservationDate DESC")
     List<Reservation> findUserReservationsOrderedByDate(@Param("userId") Long userId);
+    
+    @Query("SELECT DISTINCT r FROM Reservation r " +
+           "LEFT JOIN FETCH r.payment " +
+           "LEFT JOIN FETCH r.reservedSeats " +
+           "LEFT JOIN FETCH r.user")
+    List<Reservation> findAllWithPaymentsAndSeats();
 }

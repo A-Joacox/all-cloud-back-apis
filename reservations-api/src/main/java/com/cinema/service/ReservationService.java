@@ -23,7 +23,7 @@ public class ReservationService {
     private UserRepository userRepository;
 
     public List<Reservation> getAllReservations() {
-        return reservationRepository.findAll();
+        return reservationRepository.findAllWithPaymentsAndSeats();
     }
 
     public Optional<Reservation> getReservationById(Long id) {
