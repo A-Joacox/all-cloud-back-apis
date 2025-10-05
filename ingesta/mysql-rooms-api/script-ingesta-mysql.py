@@ -13,7 +13,19 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Cargar variables de entorno
-load_dotenv()
+# Buscar .env en el directorio padre (ingesta/)
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+load_dotenv(env_path)
+
+# Si no encuentra en el padre, buscar en el directorio actual
+if not os.path.exists(env_path):
+    load_dotenv()
+
+# Debug: Mostrar si las credenciales se están cargando
+print(f"🔍 Debug - Archivo .env usado: {env_path}")
+print(f"🔍 Debug - AWS_ACCESS_KEY_ID encontrado: {'Sí' if os.getenv('AWS_ACCESS_KEY_ID') else 'No'}")
+print(f"🔍 Debug - AWS_SECRET_ACCESS_KEY encontrado: {'Sí' if os.getenv('AWS_SECRET_ACCESS_KEY') else 'No'}")
+print(f"🔍 Debug - AWS_SESSION_TOKEN encontrado: {'Sí' if os.getenv('AWS_SESSION_TOKEN') else 'No'}")
 
 class MySQLToS3Academy:
     def __init__(self):
@@ -99,6 +111,11 @@ class MySQLToS3Academy:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
         try:
+            # Verificar cliente S3
+            if not self.s3_client:
+                logger.error("❌ Cliente S3 no inicializado")
+                return False
+                
             # Crear bucket si no existe
             self.create_s3_bucket_if_not_exists()
             
@@ -141,13 +158,112 @@ class MySQLToS3Academy:
         finally:
             connection.close()
 
+    def extract_and_upload_all_tables(self):
+        """Extraer y subir todas las tablas del sistema de salas"""
+        connection = self.connect_to_mysql()
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Tablas principales del sistema de salas
+        tables = ['rooms', 'seats', 'schedules']
+        
+        try:
+            # Verificar cliente S3
+            if not self.s3_client:
+                logger.error("❌ Cliente S3 no inicializado")
+                return False
+                
+            # Crear bucket si no existe
+            self.create_s3_bucket_if_not_exists()
+            
+            uploaded_files = []
+            
+            for table in tables:
+                logger.info(f"🔄 Procesando tabla: {table}")
+                
+                # Extraer datos de la tabla completa
+                query = f"SELECT * FROM {table}"
+                df = pd.read_sql(query, connection)
+                
+                if not df.empty:
+                    logger.info(f"📊 Datos extraídos de {table}: {len(df)} registros")
+                    
+                    # Subir como CSV
+                    s3_key_csv = f"mysql-data/rooms/{table}_{timestamp}.csv"
+                    csv_buffer = df.to_csv(index=False)
+                    
+                    self.s3_client.put_object(
+                        Bucket=self.s3_bucket,
+                        Key=s3_key_csv,
+                        Body=csv_buffer,
+                        ContentType='text/csv'
+                    )
+                    uploaded_files.append(s3_key_csv)
+                    
+                    # Subir como JSON
+                    s3_key_json = f"mysql-data/rooms/{table}_{timestamp}.json"
+                    json_buffer = df.to_json(orient='records', indent=2, date_format='iso')
+                    
+                    self.s3_client.put_object(
+                        Bucket=self.s3_bucket,
+                        Key=s3_key_json,
+                        Body=json_buffer,
+                        ContentType='application/json'
+                    )
+                    uploaded_files.append(s3_key_json)
+                    
+                    logger.info(f"✅ {table} subida exitosamente")
+                    print(f"\n📋 Muestra de datos de {table}:")
+                    print(df.head())
+                else:
+                    logger.warning(f"⚠️ No hay datos en la tabla {table}")
+            
+            # Crear archivo de metadatos
+            metadata = {
+                "extraction_date": datetime.now().isoformat(),
+                "database_type": "mysql",
+                "database_name": self.mysql_config['database'],
+                "tables_exported": tables,
+                "files_uploaded": uploaded_files,
+                "total_files": len(uploaded_files),
+                "host": self.mysql_config['host'],
+                "port": self.mysql_config['port']
+            }
+            
+            metadata_key = f"mysql-data/rooms/metadata_{timestamp}.json"
+            metadata_buffer = json.dumps(metadata, indent=2)
+            
+            self.s3_client.put_object(
+                Bucket=self.s3_bucket,
+                Key=metadata_key,
+                Body=metadata_buffer,
+                ContentType='application/json'
+            )
+            uploaded_files.append(metadata_key)
+            
+            logger.info(f"📁 Archivos subidos a S3: {len(uploaded_files)}")
+            for file in uploaded_files:
+                logger.info(f"   📄 s3://{self.s3_bucket}/{file}")
+            
+            return True
+                
+        finally:
+            connection.close()
+
 def main():
     """Función principal"""
     try:
-        print("🚀 Iniciando test con AWS Academy...")
+        # Detectar si se ejecuta desde run-all-ingesta (modo automático)
+        import sys
+        auto_mode = len(sys.argv) > 1 and sys.argv[1] == 'auto'
         
-        ingestion = MySQLToS3Academy()
-        result = ingestion.extract_and_upload_test()
+        if auto_mode:
+            print("🚀 Iniciando ingesta completa con AWS Academy...")
+            ingestion = MySQLToS3Academy()
+            result = ingestion.extract_and_upload_all_tables()
+        else:
+            print("🚀 Iniciando test con AWS Academy...")
+            ingestion = MySQLToS3Academy()
+            result = ingestion.extract_and_upload_test()
         
         if result:
             print("\n✅ ¡Test exitoso con AWS Academy!")

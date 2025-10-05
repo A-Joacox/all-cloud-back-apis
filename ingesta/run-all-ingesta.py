@@ -67,7 +67,11 @@ class IngestaManager:
             os.chdir(script_dir)
             
             # Preparar comando
-            cmd = [sys.executable, str(script_path.name)]
+            # Preparar comando con parámetro auto si no es modo test
+            if test_mode:
+                cmd = [sys.executable, str(script_path.name)]
+            else:
+                cmd = [sys.executable, str(script_path.name), 'auto']
             
             # Ejecutar el script
             process = subprocess.Popen(
@@ -82,7 +86,7 @@ class IngestaManager:
             if test_mode:
                 stdout, stderr = process.communicate(input="1\n")
             else:
-                # Modo interactivo
+                # Modo automático - no necesita input
                 stdout, stderr = process.communicate()
             
             # Restaurar directorio original

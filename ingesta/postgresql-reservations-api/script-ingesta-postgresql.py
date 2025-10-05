@@ -251,18 +251,27 @@ def main():
         
         ingestion = PostgreSQLToS3Academy()
         
-        # Preguntar qué tipo de ejecución
-        choice = input("\n¿Qué deseas hacer?\n1. Test rápido\n2. Extracción completa\nElige (1/2): ").strip()
+        # Detectar si se ejecuta desde run-all-ingesta (modo automático)
+        import sys
+        auto_mode = len(sys.argv) > 1 and sys.argv[1] == 'auto'
         
-        if choice == '1':
-            print("\n🧪 Ejecutando test...")
-            result = ingestion.extract_and_upload_test()
-        elif choice == '2':
-            print("\n📦 Ejecutando extracción completa...")
+        if auto_mode:
+            # Modo automático: ejecutar extracción completa
+            print("\n📦 Modo automático: Ejecutando extracción completa...")
             result = ingestion.extract_and_upload_all_tables()
         else:
-            print("❌ Opción no válida")
-            return
+            # Modo interactivo
+            choice = input("\n¿Qué deseas hacer?\n1. Test rápido\n2. Extracción completa\nElige (1/2): ").strip()
+            
+            if choice == '1':
+                print("\n🧪 Ejecutando test...")
+                result = ingestion.extract_and_upload_test()
+            elif choice == '2':
+                print("\n📦 Ejecutando extracción completa...")
+                result = ingestion.extract_and_upload_all_tables()
+            else:
+                print("❌ Opción no válida")
+                return
         
         if result:
             print("\n✅ ¡Ingesta completada exitosamente!")
