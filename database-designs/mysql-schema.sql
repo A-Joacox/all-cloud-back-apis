@@ -19,13 +19,13 @@ CREATE TABLE rooms (
 CREATE TABLE seats (
     id INT PRIMARY KEY AUTO_INCREMENT,
     room_id INT NOT NULL,
-    row_number VARCHAR(10) NOT NULL,
-    seat_number INT NOT NULL,
+    `row_number` VARCHAR(10) NOT NULL,
+    `seat_number` INT NOT NULL,
     seat_type ENUM('regular', 'premium', 'vip') DEFAULT 'regular',
     is_available BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_seat (room_id, row_number, seat_number)
+    UNIQUE KEY unique_seat (room_id, `row_number`, `seat_number`)
 );
 
 -- Tabla de Horarios
@@ -34,10 +34,12 @@ CREATE TABLE schedules (
     movie_id VARCHAR(100) NOT NULL, -- Referencia a MongoDB
     room_id INT NOT NULL,
     show_time DATETIME NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
+    price DECIMAL(10,2) NOT NULL CHECK (price > 0),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_schedule (room_id, show_time) -- Evitar dobles horarios en la misma sala
 );
 
 -- Índices para mejorar performance
@@ -56,15 +58,15 @@ INSERT INTO rooms (name, capacity, screen_type) VALUES
 ('Sala 3', 120, 'IMAX'),
 ('Sala 4', 60, '2D');
 
--- Generar asientos para las salas
-INSERT INTO seats (room_id, row_number, seat_number, seat_type)
+-- Generar asientos para las salas (mejorado)
+INSERT INTO seats (room_id, `row_number`, `seat_number`, seat_type)
 SELECT 
     r.id,
-    CHAR(65 + FLOOR((s.seat_num - 1) / 10)) as row_number,
-    ((s.seat_num - 1) % 10) + 1 as seat_number,
+    CHAR(65 + FLOOR((s.seat_num - 1) / 10)) as `row_number`,
+    ((s.seat_num - 1) % 10) + 1 as `seat_number`,
     CASE 
-        WHEN ((s.seat_num - 1) % 10) + 1 <= 2 THEN 'vip'
-        WHEN ((s.seat_num - 1) % 10) + 1 <= 6 THEN 'premium'
+        WHEN CHAR(65 + FLOOR((s.seat_num - 1) / 10)) IN ('A', 'B') THEN 'vip'        -- Primeras 2 filas VIP
+        WHEN CHAR(65 + FLOOR((s.seat_num - 1) / 10)) IN ('C', 'D', 'E') THEN 'premium' -- Siguientes 3 filas Premium  
         ELSE 'regular'
     END as seat_type
 FROM rooms r
