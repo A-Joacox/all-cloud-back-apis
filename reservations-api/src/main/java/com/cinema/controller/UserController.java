@@ -1,6 +1,7 @@
 package com.cinema.controller;
 
 import com.cinema.dto.UserDto;
+import com.cinema.dto.ApiResponseDto;
 import com.cinema.model.User;
 import com.cinema.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,7 +36,7 @@ public class UserController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Users retrieved successfully",
                 content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = ApiResponse.class))),
+                schema = @Schema(implementation = ApiResponseDto.class))),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     public ResponseEntity<?> getAllUsers() {
@@ -57,7 +58,7 @@ public class UserController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "User found",
                 content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = ApiResponse.class))),
+                schema = @Schema(implementation = ApiResponseDto.class))),
         @ApiResponse(responseCode = "404", description = "User not found"),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
