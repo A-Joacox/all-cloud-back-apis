@@ -46,12 +46,12 @@ def create_tables_if_not_exist(cursor):
         CREATE TABLE IF NOT EXISTS seats (
             id INT AUTO_INCREMENT PRIMARY KEY,
             room_id INT NOT NULL,
-            row_number VARCHAR(10) NOT NULL,
-            seat_number INT NOT NULL,
+            `row_number` VARCHAR(10) NOT NULL,
+            `seat_number` INT NOT NULL,
             seat_type VARCHAR(50) NOT NULL DEFAULT 'regular',
             is_available BOOLEAN DEFAULT TRUE,
             FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
-            UNIQUE KEY unique_seat (room_id, row_number, seat_number)
+            UNIQUE KEY unique_seat (room_id, `row_number`, `seat_number`)
         )
     """)
     
