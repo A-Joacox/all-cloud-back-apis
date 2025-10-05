@@ -36,6 +36,7 @@ const makeRequest = async (url, method = 'GET', data = null) => {
     const config = {
       method,
       url,
+      timeout: 30000, // 30 seconds timeout
       headers: {
         'Content-Type': 'application/json'
       }
