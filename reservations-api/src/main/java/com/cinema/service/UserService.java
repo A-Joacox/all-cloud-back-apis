@@ -1,6 +1,7 @@
 package com.cinema.service;
 
 import com.cinema.dto.UserDto;
+import com.cinema.dto.UserSummaryDto;
 import com.cinema.model.User;
 import com.cinema.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -16,6 +18,19 @@ public class UserService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public List<UserSummaryDto> getAllUsersSummary() {
+        return userRepository.findAll().stream()
+                .map(user -> new UserSummaryDto(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getName(),
+                        user.getPhone(),
+                        user.getCreatedAt(),
+                        user.getUpdatedAt()
+                ))
+                .collect(Collectors.toList());
     }
 
     public Optional<User> getUserById(Long id) {

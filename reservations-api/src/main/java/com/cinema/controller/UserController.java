@@ -22,7 +22,8 @@ public class UserController {
     @GetMapping
     public ResponseEntity<?> getAllUsers() {
         try {
-            List<User> users = userService.getAllUsers();
+            // Usar el método que devuelve solo el resumen sin reservaciones anidadas
+            var users = userService.getAllUsersSummary();
             return ResponseEntity.ok().body(new ApiResponse(true, users, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

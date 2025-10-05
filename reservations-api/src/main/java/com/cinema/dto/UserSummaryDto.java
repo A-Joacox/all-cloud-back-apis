@@ -1,51 +1,25 @@
-package com.cinema.model;
-
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+package com.cinema.dto;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-@Entity
-@Table(name = "users")
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class UserSummaryDto {
     private Long id;
-
-    @Email
-    @NotBlank
-    @Column(unique = true)
     private String email;
-
-    @NotBlank
     private String name;
-
     private String phone;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Reservation> reservations;
-
-    @CreationTimestamp
-    @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     // Constructors
-    public User() {}
+    public UserSummaryDto() {}
 
-    public User(String email, String name, String phone) {
+    public UserSummaryDto(Long id, String email, String name, String phone, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = id;
         this.email = email;
         this.name = name;
         this.phone = phone;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     // Getters and Setters
@@ -79,14 +53,6 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    public List<Reservation> getReservations() {
-        return reservations;
-    }
-
-    public void setReservations(List<Reservation> reservations) {
-        this.reservations = reservations;
     }
 
     public LocalDateTime getCreatedAt() {
