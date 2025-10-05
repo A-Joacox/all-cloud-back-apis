@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Plantilla para crear una Maquina Virtual en EC2 usando una AMI especifica (Cloud9Ubuntu22-2025-03-26T13-17)"
+
+Parameters:
+  InstanceName:
+    Type: String
+    Default: "MV pruebas proyecto"
+    Description: "Nombre de la instancia a crear"
+  AMI:
+    Type: String
+    Default: "ami-08d434e92c0cfa0c0"
+    Description: "ID de AMI"
+
+Resources:
+  EC2Instance:
+    Type: "AWS::EC2::Instance"
+    Properties:
+      Tags:
+        - Key: "Name"
+          Value: !Ref InstanceName
+      ImageId: !Ref AMI
+      InstanceType: "t3.large"
+      KeyName: "vockey"
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: "20"
+
+  InstanceSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Abrir puertos para base de datos, Adminer y Microservicios de Cine"
+      SecurityGroupIngress:
+        # SSH Access
+        - IpProtocol: "tcp"
+          FromPort: "22"
+          ToPort: "22"
+          CidrIp: "0.0.0.0/0"
+          Description: "SSH access"
+        
+        # HTTP/HTTPS Access
+        - IpProtocol: "tcp"
+          FromPort: "80"
+          ToPort: "80"
+          CidrIp: "0.0.0.0/0"
+          Description: "HTTP access"
+        - IpProtocol: "tcp"
+          FromPort: "443"
+          ToPort: "443"
+          CidrIp: "0.0.0.0/0"
+          Description: "HTTPS access"
+        
+        # Adminer (existing)
+        - IpProtocol: "tcp"
+          FromPort: "8080"
+          ToPort: "8080"
+          CidrIp: "0.0.0.0/0"
+          Description: "Adminer database management"
+        
+        # Microservices APIs
+        - IpProtocol: "tcp"
+          FromPort: "3001"
+          ToPort: "3001"
+          CidrIp: "0.0.0.0/0"
+          Description: "Movies API (Next.js + MongoDB)"
+        - IpProtocol: "tcp"
+          FromPort: "3002"
+          ToPort: "3002"
+          CidrIp: "0.0.0.0/0"
+          Description: "Rooms API (Python + MySQL)"
+        - IpProtocol: "tcp"
+          FromPort: "3003"
+          ToPort: "3003"
+          CidrIp: "0.0.0.0/0"
+          Description: "Reservations API (Java + PostgreSQL)"
+        - IpProtocol: "tcp"
+          FromPort: "3004"
+          ToPort: "3004"
+          CidrIp: "0.0.0.0/0"
+          Description: "Gateway API (Main entry point)"
+        - IpProtocol: "tcp"
+          FromPort: "3005"
+          ToPort: "3005"
+          CidrIp: "0.0.0.0/0"
+          Description: "Analytics API"
+        
+        # Database Ports
+        - IpProtocol: "tcp"
+          FromPort: "27017"
+          ToPort: "27017"
+          CidrIp: "0.0.0.0/0"
+          Description: "MongoDB"
+        - IpProtocol: "tcp"
+          FromPort: "3307"
+          ToPort: "3307"
+          CidrIp: "0.0.0.0/0"
+          Description: "MySQL (changed from 3306)"
+        - IpProtocol: "tcp"
+          FromPort: "5432"
+          ToPort: "5432"
+          CidrIp: "0.0.0.0/0"
+          Description: "PostgreSQL"
+
+Outputs:
+  InstanceId:
+    Description: "ID de la instancia EC2"
+    Value: !Ref EC2Instance
+  InstancePublicIP:
+    Description: "IP publica de la instancia"
+    Value: !GetAtt EC2Instance.PublicIp
+  GatewayURL:
+    Description: "Gateway API URL (Main entry point)"
+    Value: !Sub "http://${EC2Instance.PublicIp}:3004"
+  AnalyticsURL:
+    Description: "Analytics API URL"
+    Value: !Sub "http://${EC2Instance.PublicIp}:3005"
+  MoviesAPIURL:
+    Description: "Movies API URL"
+    Value: !Sub "http://${EC2Instance.PublicIp}:3001"
+  RoomsAPIURL:
+    Description: "Rooms API URL"
+    Value: !Sub "http://${EC2Instance.PublicIp}:3002"
+  ReservationsAPIURL:
+    Description: "Reservations API URL"
+    Value: !Sub "http://${EC2Instance.PublicIp}:3003"
