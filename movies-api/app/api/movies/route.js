@@ -127,7 +127,31 @@ export async function GET(request) {
   }
 }
 
-// POST /api/movies - Crear película
+/**
+ * @swagger
+ * /api/movies:
+ *   post:
+ *     tags: [Movies]
+ *     summary: Create a new movie
+ *     description: Add a new movie to the catalog
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Movie'
+ *     responses:
+ *       201:
+ *         description: Movie created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ *       400:
+ *         description: Bad request - Invalid input
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request) {
   try {
     await connectDB();

@@ -716,6 +716,11 @@ app.use((error, req, res, next) => {
   });
 });
 
+// Root route - redirect to docs
+app.get('/', (req, res) => {
+  res.redirect('/docs');
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ 

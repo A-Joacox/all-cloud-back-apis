@@ -2,7 +2,30 @@ import { NextResponse } from 'next/server';
 import connectDB from '../../../../lib/mongodb';
 import Movie from '../../../../models/Movie';
 
-// GET /api/movies/featured - Obtener películas destacadas
+/**
+ * @swagger
+ * /api/movies/featured:
+ *   get:
+ *     tags: [Movies]
+ *     summary: Get featured movies
+ *     description: Retrieve a list of featured movies (high rating, sorted by rating and release date)
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 5
+ *         description: Number of featured movies to return
+ *     responses:
+ *       200:
+ *         description: Featured movies retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request) {
   try {
     await connectDB();

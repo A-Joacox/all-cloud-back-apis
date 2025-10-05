@@ -2,7 +2,23 @@ import { NextResponse } from 'next/server';
 import connectDB from '../../../lib/mongodb';
 import Genre from '../../../models/Genre';
 
-// GET /api/genres - Listar géneros
+/**
+ * @swagger
+ * /api/genres:
+ *   get:
+ *     tags: [Genres]
+ *     summary: Get all genres
+ *     description: Retrieve a list of all movie genres
+ *     responses:
+ *       200:
+ *         description: Genres retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET() {
   try {
     await connectDB();

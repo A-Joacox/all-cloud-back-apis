@@ -244,6 +244,25 @@ def get_room(room_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/rooms', methods=['POST'])
+@swag_from({
+    'tags': ['Rooms'],
+    'summary': 'Create a new room',
+    'description': 'Add a new cinema room to the system',
+    'parameters': [{
+        'name': 'body',
+        'in': 'body',
+        'required': True,
+        'schema': {'$ref': '#/definitions/Room'}
+    }],
+    'responses': {
+        201: {
+            'description': 'Room created successfully',
+            'schema': {'$ref': '#/definitions/ApiResponse'}
+        },
+        400: {'description': 'Bad request - Invalid input'},
+        500: {'description': 'Internal server error'}
+    }
+})
 def create_room():
     try:
         data = request.get_json()
@@ -292,6 +311,52 @@ def get_room_seats(room_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/rooms/<int:room_id>/seats', methods=['POST'])
+@swag_from({
+    'tags': ['Seats'],
+    'summary': 'Create seats for a room',
+    'description': 'Add seats to a cinema room, either automatically or manually',
+    'parameters': [
+        {
+            'name': 'room_id',
+            'in': 'path',
+            'type': 'integer',
+            'required': True,
+            'description': 'Room ID'
+        },
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'auto_generate': {
+                        'type': 'boolean',
+                        'description': 'Auto-generate seats based on room capacity'
+                    },
+                    'seats_per_row': {
+                        'type': 'integer',
+                        'description': 'Seats per row for auto-generation (default: 10)'
+                    },
+                    'seats': {
+                        'type': 'array',
+                        'items': {'$ref': '#/definitions/Seat'},
+                        'description': 'Array of seat objects for manual creation'
+                    }
+                }
+            }
+        }
+    ],
+    'responses': {
+        201: {
+            'description': 'Seats created successfully',
+            'schema': {'$ref': '#/definitions/ApiResponse'}
+        },
+        400: {'description': 'Bad request - Invalid input'},
+        404: {'description': 'Room not found'},
+        500: {'description': 'Internal server error'}
+    }
+})
 def create_seats(room_id):
     try:
         room = Room.query.get_or_404(room_id)
@@ -359,6 +424,25 @@ def get_schedules():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/schedules', methods=['POST'])
+@swag_from({
+    'tags': ['Schedules'],
+    'summary': 'Create a new schedule',
+    'description': 'Add a new movie schedule to the system',
+    'parameters': [{
+        'name': 'body',
+        'in': 'body',
+        'required': True,
+        'schema': {'$ref': '#/definitions/Schedule'}
+    }],
+    'responses': {
+        201: {
+            'description': 'Schedule created successfully',
+            'schema': {'$ref': '#/definitions/ApiResponse'}
+        },
+        400: {'description': 'Bad request - Invalid input'},
+        500: {'description': 'Internal server error'}
+    }
+})
 def create_schedule():
     try:
         data = request.get_json()

@@ -2,7 +2,32 @@ import { NextResponse } from 'next/server';
 import connectDB from '../../../../lib/mongodb';
 import Movie from '../../../../models/Movie';
 
-// GET /api/movies/[id] - Obtener película específica
+/**
+ * @swagger
+ * /api/movies/{id}:
+ *   get:
+ *     tags: [Movies]
+ *     summary: Get movie by ID
+ *     description: Retrieve a specific movie by its ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Movie ID (MongoDB ObjectId)
+ *     responses:
+ *       200:
+ *         description: Movie retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApiResponse'
+ *       404:
+ *         description: Movie not found
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request, { params }) {
   try {
     await connectDB();

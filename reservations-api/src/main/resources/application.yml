@@ -18,6 +18,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
 
 # SpringDoc OpenAPI Configuration
 springdoc:
@@ -32,7 +33,6 @@ springdoc:
     displayRequestDuration: true
     showExtensions: true
   show-actuator: false
-        format_sql: true
 
 # External services
 external:
