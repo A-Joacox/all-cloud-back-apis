@@ -63,6 +63,7 @@ def create_tables_if_not_exist(cursor):
             movie_id VARCHAR(100) NOT NULL,
             show_time DATETIME NOT NULL,
             price DECIMAL(10,2) NOT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
         )
@@ -136,8 +137,8 @@ def generate_data():
         print("Generando salas...")
         rooms = [generate_room() for _ in range(100)]
         insert_room_query = """
-        INSERT INTO rooms (name, capacity, screen_type, is_active, created_at, updated_at)
-        VALUES (%(name)s, %(capacity)s, %(screen_type)s, %(is_active)s, NOW(), NOW())
+        INSERT INTO rooms (name, capacity, screen_type, is_active)
+        VALUES (%(name)s, %(capacity)s, %(screen_type)s, %(is_active)s)
         """
         cursor.executemany(insert_room_query, rooms)
         connection.commit()
@@ -151,8 +152,8 @@ def generate_data():
             all_seats.extend(seats)
             if len(all_seats) >= 1000:
                 insert_seat_query = """
-                INSERT INTO seats (room_id, `row_number`, `seat_number`, seat_type, is_available, created_at)
-                VALUES (%(room_id)s, %(row_number)s, %(seat_number)s, %(seat_type)s, %(is_available)s, NOW())
+                INSERT INTO seats (room_id, `row_number`, seat_number, seat_type, is_available)
+                VALUES (%(room_id)s, %(row_number)s, %(seat_number)s, %(seat_type)s, %(is_available)s)
                 """
                 cursor.executemany(insert_seat_query, all_seats)
                 connection.commit()
@@ -160,8 +161,8 @@ def generate_data():
                 all_seats = []
         if all_seats:
             insert_seat_query = """
-            INSERT INTO seats (room_id, `row_number`, `seat_number`, seat_type, is_available, created_at)
-            VALUES (%(room_id)s, %(row_number)s, %(seat_number)s, %(seat_type)s, %(is_available)s, NOW())
+            INSERT INTO seats (room_id, `row_number`, seat_number, seat_type, is_available)
+            VALUES (%(room_id)s, %(row_number)s, %(seat_number)s, %(seat_type)s, %(is_available)s)
             """
             cursor.executemany(insert_seat_query, all_seats)
             connection.commit()
@@ -174,8 +175,8 @@ def generate_data():
             schedules.append(generate_schedule())
             if len(schedules) >= 1000:
                 insert_schedule_query = """
-                INSERT INTO schedules (movie_id, room_id, show_time, price, is_active, created_at)
-                VALUES (%(movie_id)s, %(room_id)s, %(show_time)s, %(price)s, %(is_active)s, NOW())
+                INSERT INTO schedules (movie_id, room_id, show_time, price, is_active)
+                VALUES (%(movie_id)s, %(room_id)s, %(show_time)s, %(price)s, %(is_active)s)
                 """
                 cursor.executemany(insert_schedule_query, schedules)
                 connection.commit()
@@ -183,8 +184,8 @@ def generate_data():
                 schedules = []
         if schedules:
             insert_schedule_query = """
-            INSERT INTO schedules (movie_id, room_id, show_time, price, is_active, created_at)
-            VALUES (%(movie_id)s, %(room_id)s, %(show_time)s, %(price)s, %(is_active)s, NOW())
+            INSERT INTO schedules (movie_id, room_id, show_time, price, is_active)
+            VALUES (%(movie_id)s, %(room_id)s, %(show_time)s, %(price)s, %(is_active)s)
             """
             cursor.executemany(insert_schedule_query, schedules)
             connection.commit()
