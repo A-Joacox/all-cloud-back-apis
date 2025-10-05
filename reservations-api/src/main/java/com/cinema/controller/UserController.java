@@ -43,10 +43,10 @@ public class UserController {
         try {
             // Usar el método que devuelve solo el resumen sin reservaciones anidadas
             var users = userService.getAllUsersSummary();
-            return ResponseEntity.ok().body(new ApiResponse(true, users, null));
+            return ResponseEntity.ok().body(new ApiResponseDto(true, users, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, null, e.getMessage()));
+                    .body(new ApiResponseDto(false, null, e.getMessage()));
         }
     }
 
@@ -68,14 +68,14 @@ public class UserController {
         try {
             Optional<User> user = userService.getUserById(id);
             if (user.isPresent()) {
-                return ResponseEntity.ok().body(new ApiResponse(true, user.get(), null));
+                return ResponseEntity.ok().body(new ApiResponseDto(true, user.get(), null));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new ApiResponse(false, null, "User not found"));
+                        .body(new ApiResponseDto(false, null, "User not found"));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(false, null, e.getMessage()));
+                    .body(new ApiResponseDto(false, null, e.getMessage()));
         }
     }
 
@@ -84,10 +84,10 @@ public class UserController {
         try {
             User user = userService.createUser(userDto);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new ApiResponse(true, user, null));
+                    .body(new ApiResponseDto(true, user, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse(false, null, e.getMessage()));
+                    .body(new ApiResponseDto(false, null, e.getMessage()));
         }
     }
 
@@ -95,10 +95,10 @@ public class UserController {
     public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UserDto userDto) {
         try {
             User user = userService.updateUser(id, userDto);
-            return ResponseEntity.ok().body(new ApiResponse(true, user, null));
+            return ResponseEntity.ok().body(new ApiResponseDto(true, user, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse(false, null, e.getMessage()));
+                    .body(new ApiResponseDto(false, null, e.getMessage()));
         }
     }
 
@@ -106,48 +106,11 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         try {
             userService.deleteUser(id);
-            return ResponseEntity.ok().body(new ApiResponse(true, "User deleted successfully", null));
+            return ResponseEntity.ok().body(new ApiResponseDto(true, "User deleted successfully", null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse(false, null, e.getMessage()));
+                    .body(new ApiResponseDto(false, null, e.getMessage()));
         }
     }
 
-    // Clase interna para respuesta API
-    public static class ApiResponse {
-        private boolean success;
-        private Object data;
-        private String error;
-
-        public ApiResponse(boolean success, Object data, String error) {
-            this.success = success;
-            this.data = data;
-            this.error = error;
-        }
-
-        // Getters and Setters
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public void setSuccess(boolean success) {
-            this.success = success;
-        }
-
-        public Object getData() {
-            return data;
-        }
-
-        public void setData(Object data) {
-            this.data = data;
-        }
-
-        public String getError() {
-            return error;
-        }
-
-        public void setError(String error) {
-            this.error = error;
-        }
-    }
 }
