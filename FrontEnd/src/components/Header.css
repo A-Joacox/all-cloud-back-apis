@@ -1,0 +1,115 @@
+.header {
+  background: linear-gradient(180deg, rgba(7,17,40,0.95), rgba(15,39,64,0.9));
+  color: var(--text);
+  padding: 1.25rem 0;
+  box-shadow: 0 8px 40px rgba(3, 10, 25, 0.8), inset 0 1px 0 rgba(34,193,255,0.1);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(34,193,255,0.15);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  text-shadow: 0 8px 25px rgba(34,193,255,0.4);
+  background: linear-gradient(135deg, var(--text), var(--accent-1), var(--accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: all 0.3s ease;
+}
+
+.logo {
+  text-decoration: none;
+  transition: transform 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.03);
+}
+
+nav {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+nav a {
+  color: var(--muted);
+  text-decoration: none;
+  margin-left: 0;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  background: transparent;
+  border: 1px solid transparent;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+}
+
+nav a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(34,193,255,0.1), rgba(91,140,255,0.05));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+nav a:hover {
+  background: rgba(34,193,255,0.08);
+  transform: translateY(-2px);
+  color: var(--text);
+  border-color: rgba(34,193,255,0.2);
+}
+
+nav a:hover::before {
+  opacity: 1;
+}
+
+nav a[aria-current="page"] {
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  color: #03121d;
+  box-shadow: 0 10px 30px rgba(34,193,255,0.35);
+  transform: translateY(-3px);
+  border-color: transparent;
+}
+
+nav a[aria-current="page"]::before {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .logo h1 {
+    font-size: 1.5rem;
+  }
+  
+  nav a { 
+    padding: 0.6rem 1rem; 
+    font-size: 0.9rem;
+  }
+}

@@ -1,0 +1,146 @@
+.movie-card {
+  flex: 0 0 auto;
+  width: 280px;
+  background: rgba(15,39,64,0.4);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(34,193,255,0.1);
+}
+
+.movie-card:hover {
+  transform: scale(1.05) translateY(-8px);
+  box-shadow: 0 12px 40px rgba(34,193,255,0.25);
+  border-color: rgba(34,193,255,0.3);
+  background: rgba(15,39,64,0.6);
+}
+
+.movie-card-poster {
+  width: 100%;
+  aspect-ratio: 2/3;
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.movie-card-poster::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%),
+    radial-gradient(circle at 30% 40%, rgba(255,255,255,0.15), transparent 60%);
+  opacity: 0.6;
+}
+
+.movie-initials {
+  font-size: 3rem;
+  font-weight: 900;
+  color: rgba(3,18,29,0.9);
+  letter-spacing: 2px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.movie-card-info {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.movie-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movie-meta {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.movie-rating {
+  color: var(--accent-1);
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.movie-duration {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.movie-genre {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+  opacity: 0.8;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .movie-card {
+    width: 220px;
+  }
+
+  .movie-initials {
+    font-size: 2.5rem;
+  }
+
+  .movie-title {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-card {
+    width: 180px;
+  }
+
+  .movie-initials {
+    font-size: 2rem;
+  }
+
+  .movie-card-info {
+    padding: 0.75rem;
+  }
+
+  .movie-title {
+    font-size: 0.95rem;
+  }
+
+  .movie-rating,
+  .movie-duration,
+  .movie-genre {
+    font-size: 0.8rem;
+  }
+}

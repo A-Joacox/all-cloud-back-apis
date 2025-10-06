@@ -1,0 +1,24 @@
+.App {
+  min-height: 100vh;
+  position: relative;
+}
+
+.App::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(34,193,255,0.05), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(91,140,255,0.04), transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+main {
+  padding-bottom: 4rem;
+  position: relative;
+  z-index: 1;
+}

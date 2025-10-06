@@ -1,0 +1,247 @@
+.movies-list {
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, rgba(7,17,40,0.95), rgba(7,17,40,1));
+}
+
+/* Hero Header Section */
+.hero-header {
+  padding: 2rem 4rem 3rem;
+  background: linear-gradient(to bottom, rgba(15,39,64,0.4), transparent);
+  border-bottom: 1px solid rgba(34,193,255,0.1);
+  margin-bottom: 2rem;
+}
+
+.hero-content {
+  max-width: 100%;
+}
+
+.hero-greeting {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.hero-filters {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-form {
+  flex: 1;
+  max-width: 500px;
+  min-width: 300px;
+}
+
+.search-form input {
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  background: rgba(15,39,64,0.6);
+  border: 1px solid rgba(34,193,255,0.2);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.search-form input:focus {
+  outline: none;
+  border-color: var(--accent-1);
+  background: rgba(15,39,64,0.8);
+  box-shadow: 0 0 0 3px rgba(34,193,255,0.1);
+}
+
+.search-form input::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.genre-select {
+  padding: 0.75rem 1.25rem;
+  background: rgba(15,39,64,0.6);
+  border: 1px solid rgba(34,193,255,0.2);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 180px;
+}
+
+.genre-select:focus {
+  outline: none;
+  border-color: var(--accent-1);
+  background: rgba(15,39,64,0.8);
+}
+
+/* Content Sections */
+.content-section {
+  margin-bottom: 3rem;
+  padding: 0 4rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 1rem;
+  letter-spacing: -0.3px;
+}
+
+/* Horizontal Scrolling */
+.horizontal-scroll {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 1rem;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34,193,255,0.3) rgba(15,39,64,0.5);
+}
+
+.horizontal-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-track {
+  background: rgba(15,39,64,0.5);
+  border-radius: 4px;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(34,193,255,0.3);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.horizontal-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(34,193,255,0.5);
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  padding: 3rem 4rem;
+  margin-top: 2rem;
+}
+
+.pagination-btn {
+  padding: 0.75rem 1.5rem;
+  background: rgba(15,39,64,0.6);
+  border: 1px solid rgba(34,193,255,0.2);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: rgba(34,193,255,0.15);
+  border-color: var(--accent-1);
+  transform: translateY(-2px);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* Loading and Error States */
+.loading, .error {
+  text-align: center;
+  padding: 4rem 2rem;
+  font-size: 1.3rem;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading {
+  color: var(--accent-1);
+}
+
+.error {
+  color: #ff8a8a;
+  text-shadow: 0 2px 10px rgba(255,138,138,0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .hero-header,
+  .content-section,
+  .pagination {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .hero-greeting {
+    font-size: 2rem;
+  }
+
+  .section-title {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-header,
+  .content-section,
+  .pagination {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .hero-greeting {
+    font-size: 1.75rem;
+  }
+
+  .hero-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-form {
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+  .genre-select {
+    width: 100%;
+  }
+
+  .section-title {
+    font-size: 1.2rem;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-greeting {
+    font-size: 1.5rem;
+  }
+
+  .pagination-btn {
+    width: 100%;
+  }
+}

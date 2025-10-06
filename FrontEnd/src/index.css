@@ -1,0 +1,78 @@
+
+:root {
+  /* Blue futuristic theme variables */
+  --bg-900: #071128;     /* very dark blue */
+  --bg-800: #081827;
+  --surface: #0f2740;    /* panel surfaces */
+  --muted: #9fb8d9;
+  --text: #d6eefc;
+  --accent-1: #22c1ff;   /* cyan bright */
+  --accent-2: #5b8cff;   /* blue neon */
+  --glow: rgba(34,193,255,0.18);
+  --glass: rgba(255,255,255,0.03);
+
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color: var(--text);
+  background-color: var(--bg-900);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(1200px 600px at 10% 10%, rgba(34,193,255,0.04), transparent), var(--bg-900);
+  color: var(--text);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, select {
+  font-family: inherit;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+
+.error {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+  font-size: 1.2rem;
+  color: #ff8a8a;
+}
