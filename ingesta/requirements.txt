@@ -1,20 +1,24 @@
 # Dependencias principales para el sistema de ingesta
 # Instalar con: pip install -r requirements.txt
 
-# Para conexiones a bases de datos
-psycopg2-binary==2.9.7    # PostgreSQL
-pymongo==4.5.0             # MongoDB  
-mysql-connector-python==8.1.0  # MySQL (alternativa a la que ya tienes)
+# IMPORTANTE: Instalar numpy primero para evitar incompatibilidades
+numpy==1.24.3
 
-# Para procesamiento de datos
-pandas==2.1.1
+# Para procesamiento de datos (instalar después de numpy)
+pandas==2.0.3
+
+# Para conexiones a bases de datos
+psycopg2-binary==2.9.9    # PostgreSQL
+pymongo==4.6.1             # MongoDB  
+PyMySQL==1.1.0             # MySQL (más ligero que mysql-connector)
+mysql-connector-python==8.2.0  # MySQL connector (requerido por script-ingesta-mysql.py)
 
 # Para AWS S3
-boto3==1.28.62
-botocore==1.31.62
+boto3==1.34.34
+botocore==1.34.34
 
 # Para configuración
-python-dotenv==1.0.0
+python-dotenv==1.0.1
 
 # Nota: Cada subcarpeta tiene su propio requirements.txt específico
 # Este archivo es para instalar todas las dependencias de una vez

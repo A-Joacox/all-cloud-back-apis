@@ -187,7 +187,23 @@ schedules_schema = ScheduleSchema(many=True)
 @swag_from({
     'tags': ['Rooms'],
     'summary': 'Get all active rooms',
-    'description': 'Retrieve a list of all active cinema rooms',
+    'description': 'Retrieve a list of all active cinema rooms with optional pagination',
+    'parameters': [
+        {
+            'name': 'limit',
+            'in': 'query',
+            'type': 'integer',
+            'default': 1000,
+            'description': 'Maximum number of rooms to return'
+        },
+        {
+            'name': 'offset',
+            'in': 'query',
+            'type': 'integer',
+            'default': 0,
+            'description': 'Number of rooms to skip'
+        }
+    ],
     'responses': {
         200: {
             'description': 'List of rooms retrieved successfully',
@@ -210,7 +226,13 @@ schedules_schema = ScheduleSchema(many=True)
 })
 def get_rooms():
     try:
-        rooms = Room.query.filter_by(is_active=True).all()
+        # Get pagination parameters
+        limit = request.args.get('limit', default=1000, type=int)
+        offset = request.args.get('offset', default=0, type=int)
+        
+        # Query with pagination
+        rooms = Room.query.filter_by(is_active=True).limit(limit).offset(offset).all()
+        
         return jsonify({
             'success': True,
             'data': [{
@@ -293,8 +315,11 @@ def create_room():
 @app.route('/api/rooms/<int:room_id>/seats', methods=['GET'])
 def get_room_seats(room_id):
     try:
+        limit = request.args.get('limit', default=1000, type=int)
+        offset = request.args.get('offset', default=0, type=int)
+        
         room = Room.query.get_or_404(room_id)
-        seats = Seat.query.filter_by(room_id=room_id).all()
+        seats = Seat.query.filter_by(room_id=room_id).limit(limit).offset(offset).all()
         
         return jsonify({
             'success': True,
@@ -398,6 +423,8 @@ def get_schedules():
     try:
         movie_id = request.args.get('movie_id')
         room_id = request.args.get('room_id')
+        limit = request.args.get('limit', default=1000, type=int)
+        offset = request.args.get('offset', default=0, type=int)
         
         query = Schedule.query.filter_by(is_active=True)
         
@@ -406,7 +433,8 @@ def get_schedules():
         if room_id:
             query = query.filter_by(room_id=room_id)
         
-        schedules = query.all()
+        # Apply pagination
+        schedules = query.limit(limit).offset(offset).all()
         
         return jsonify({
             'success': True,
