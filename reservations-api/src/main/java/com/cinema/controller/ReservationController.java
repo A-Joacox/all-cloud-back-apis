@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -28,10 +29,18 @@ public class ReservationController {
     private ReservationService reservationService;
 
     @GetMapping
-    public ResponseEntity<?> getAllReservations() {
+    public ResponseEntity<?> getAllReservations(
+            @RequestParam(required = false, defaultValue = "1000") Integer limit,
+            @RequestParam(required = false, defaultValue = "0") Integer offset) {
         try {
             List<Reservation> reservations = reservationService.getAllReservations();
-            return ResponseEntity.ok().body(new ApiResponse(true, reservations, null));
+            
+            // Apply limit and offset
+            int start = Math.min(offset, reservations.size());
+            int end = Math.min(offset + limit, reservations.size());
+            List<Reservation> paginatedReservations = reservations.subList(start, end);
+            
+            return ResponseEntity.ok().body(new ApiResponse(true, paginatedReservations, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, null, e.getMessage()));

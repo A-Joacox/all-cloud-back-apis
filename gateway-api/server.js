@@ -126,14 +126,15 @@ app.get('/health', (req, res) => {
  */
 app.get('/api/showtimes', async (req, res) => {
   try {
-    const { movieId, roomId, date } = req.query;
+    const { movieId, roomId, date, limit = 100 } = req.query;
     
-    // Obtener horarios del servicio de salas
+    // Obtener horarios del servicio de salas con límite
     let schedulesUrl = `${ROOMS_API_URL}/api/schedules`;
     const scheduleParams = new URLSearchParams();
     
     if (movieId) scheduleParams.append('movie_id', movieId);
     if (roomId) scheduleParams.append('room_id', roomId);
+    scheduleParams.append('limit', limit); // Agregar límite
     
     if (scheduleParams.toString()) {
       schedulesUrl += `?${scheduleParams.toString()}`;
@@ -292,6 +293,7 @@ app.post('/api/book-ticket', async (req, res) => {
 app.get('/api/user-dashboard/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    const { limit = 50 } = req.query; // Agregar límite para reservaciones
     
     // Obtener información del usuario
     const userResponse = await makeRequest(`${RESERVATIONS_API_URL}/api/users/${userId}`);
@@ -299,8 +301,8 @@ app.get('/api/user-dashboard/:userId', async (req, res) => {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
     
-    // Obtener reservas del usuario
-    const reservationsResponse = await makeRequest(`${RESERVATIONS_API_URL}/api/reservations/user/${userId}`);
+    // Obtener reservas del usuario con límite
+    const reservationsResponse = await makeRequest(`${RESERVATIONS_API_URL}/api/reservations/user/${userId}?limit=${limit}`);
     if (!reservationsResponse.success) {
       return res.status(500).json({ success: false, error: 'Failed to fetch user reservations' });
     }

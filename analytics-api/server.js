@@ -137,10 +137,10 @@ app.get('/health', (req, res) => {
  */
 app.get('/api/analytics/revenue', async (req, res) => {
   try {
-    const { period = 'month', startDate, endDate } = req.query;
+    const { period = 'month', startDate, endDate, limit = 100 } = req.query;
     
-    // Obtener todas las reservas
-    const reservationsResponse = await makeRequest(`${RESERVATIONS_API_URL}/api/reservations`);
+    // Obtener reservas con límite
+    const reservationsResponse = await makeRequest(`${RESERVATIONS_API_URL}/api/reservations?limit=${limit}`);
     if (!reservationsResponse.success) {
       return res.status(500).json({ success: false, error: 'Failed to fetch reservations' });
     }
@@ -266,10 +266,10 @@ app.get('/api/analytics/revenue', async (req, res) => {
  */
 app.get('/api/analytics/popular-movies', async (req, res) => {
   try {
-    const { limit = 10, period = 'month' } = req.query;
+    const { limit = 10, period = 'month', reservationsLimit = 500 } = req.query;
     
-    // Obtener todas las reservas
-    const reservationsResponse = await makeRequest(`${RESERVATIONS_API_URL}/api/reservations`);
+    // Obtener reservas con límite
+    const reservationsResponse = await makeRequest(`${RESERVATIONS_API_URL}/api/reservations?limit=${reservationsLimit}`);
     if (!reservationsResponse.success) {
       return res.status(500).json({ success: false, error: 'Failed to fetch reservations' });
     }
@@ -384,8 +384,8 @@ app.get('/api/analytics/occupancy', async (req, res) => {
       filteredRooms = rooms.filter(room => room.id === parseInt(roomId));
     }
     
-    // Obtener todas las reservas
-    const reservationsResponse = await makeRequest(`${RESERVATIONS_API_URL}/api/reservations`);
+    // Obtener reservas con límite
+    const reservationsResponse = await makeRequest(`${RESERVATIONS_API_URL}/api/reservations?limit=200`);
     if (!reservationsResponse.success) {
       return res.status(500).json({ success: false, error: 'Failed to fetch reservations' });
     }
@@ -531,8 +531,8 @@ app.get('/api/analytics/user-behavior', async (req, res) => {
     
     const users = usersResponse.data;
     
-    // Obtener todas las reservas
-    const reservationsResponse = await makeRequest(`${RESERVATIONS_API_URL}/api/reservations`);
+    // Obtener reservas con límite
+    const reservationsResponse = await makeRequest(`${RESERVATIONS_API_URL}/api/reservations?limit=300`);
     if (!reservationsResponse.success) {
       return res.status(500).json({ success: false, error: 'Failed to fetch reservations' });
     }
@@ -648,12 +648,12 @@ app.get('/api/analytics/dashboard', async (req, res) => {
   try {
     const { period = 'month' } = req.query;
     
-    // Obtener datos de todos los servicios
+    // Obtener datos de todos los servicios con límites
     const [moviesResponse, roomsResponse, usersResponse, reservationsResponse] = await Promise.all([
-      makeRequest(`${MOVIES_API_URL}/api/movies`),
+      makeRequest(`${MOVIES_API_URL}/api/movies?limit=50`),
       makeRequest(`${ROOMS_API_URL}/api/rooms`),
-      makeRequest(`${RESERVATIONS_API_URL}/api/users`),
-      makeRequest(`${RESERVATIONS_API_URL}/api/reservations`)
+      makeRequest(`${RESERVATIONS_API_URL}/api/users?limit=100`),
+      makeRequest(`${RESERVATIONS_API_URL}/api/reservations?limit=100`)
     ]);
     
     if (!moviesResponse.success || !roomsResponse.success || 

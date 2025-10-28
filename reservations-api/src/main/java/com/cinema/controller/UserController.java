@@ -39,11 +39,19 @@ public class UserController {
                 schema = @Schema(implementation = ApiResponseDto.class))),
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    public ResponseEntity<?> getAllUsers() {
+    public ResponseEntity<?> getAllUsers(
+            @RequestParam(required = false, defaultValue = "1000") Integer limit,
+            @RequestParam(required = false, defaultValue = "0") Integer offset) {
         try {
             // Usar el método que devuelve solo el resumen sin reservaciones anidadas
             var users = userService.getAllUsersSummary();
-            return ResponseEntity.ok().body(new ApiResponseDto(true, users, null));
+            
+            // Apply limit and offset
+            int start = Math.min(offset, users.size());
+            int end = Math.min(offset + limit, users.size());
+            var paginatedUsers = users.subList(start, end);
+            
+            return ResponseEntity.ok().body(new ApiResponseDto(true, paginatedUsers, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponseDto(false, null, e.getMessage()));
