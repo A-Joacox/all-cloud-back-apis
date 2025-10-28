@@ -153,8 +153,8 @@ public class ReservationService {
         return new ReservedSeatResponseDto(
             seat.getId(),
             seat.getSeatId(),
-            seat.getRowNumber(),
-            seat.getSeatNumber()
+            null, // rowNumber no existe en el modelo actual
+            null  // seatNumber no existe en el modelo actual
         );
     }
 
@@ -169,7 +169,7 @@ public class ReservationService {
             payment.getId(),
             payment.getAmount(),
             payment.getPaymentMethod(),
-            payment.getStatus() != null ? payment.getStatus().toString() : null,
+            payment.getPaymentStatus() != null ? payment.getPaymentStatus().toString() : null,
             payment.getPaymentDate()
         );
     }
