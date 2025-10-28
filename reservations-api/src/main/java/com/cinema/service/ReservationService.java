@@ -1,9 +1,14 @@
 package com.cinema.service;
 
 import com.cinema.dto.ReservationDto;
+import com.cinema.dto.ReservationResponseDto;
+import com.cinema.dto.UserResponseDto;
+import com.cinema.dto.ReservedSeatResponseDto;
+import com.cinema.dto.PaymentResponseDto;
 import com.cinema.model.Reservation;
 import com.cinema.model.ReservedSeat;
 import com.cinema.model.User;
+import com.cinema.model.Payment;
 import com.cinema.repository.ReservationRepository;
 import com.cinema.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -80,5 +86,103 @@ public class ReservationService {
             throw new RuntimeException("Reservation not found with id: " + id);
         }
         reservationRepository.deleteById(id);
+    }
+
+    // ========== Métodos de conversión Entity -> DTO ==========
+
+    /**
+     * Convierte una entidad Reservation a ReservationResponseDto
+     */
+    public ReservationResponseDto convertToDto(Reservation reservation) {
+        if (reservation == null) {
+            return null;
+        }
+
+        ReservationResponseDto dto = new ReservationResponseDto();
+        dto.setId(reservation.getId());
+        dto.setScheduleId(reservation.getScheduleId());
+        dto.setMovieId(reservation.getMovieId());
+        dto.setTotalAmount(reservation.getTotalAmount());
+        dto.setStatus(reservation.getStatus() != null ? reservation.getStatus().toString() : null);
+        dto.setReservationDate(reservation.getReservationDate());
+
+        // Convertir User
+        if (reservation.getUser() != null) {
+            dto.setUser(convertUserToDto(reservation.getUser()));
+        }
+
+        // Convertir ReservedSeats
+        if (reservation.getReservedSeats() != null) {
+            dto.setReservedSeats(
+                reservation.getReservedSeats().stream()
+                    .map(this::convertReservedSeatToDto)
+                    .collect(Collectors.toList())
+            );
+        }
+
+        // Convertir Payment
+        if (reservation.getPayment() != null) {
+            dto.setPayment(convertPaymentToDto(reservation.getPayment()));
+        }
+
+        return dto;
+    }
+
+    /**
+     * Convierte una entidad User a UserResponseDto
+     */
+    private UserResponseDto convertUserToDto(User user) {
+        if (user == null) {
+            return null;
+        }
+        return new UserResponseDto(
+            user.getId(),
+            user.getEmail(),
+            user.getName(),
+            user.getPhone()
+        );
+    }
+
+    /**
+     * Convierte una entidad ReservedSeat a ReservedSeatResponseDto
+     */
+    private ReservedSeatResponseDto convertReservedSeatToDto(ReservedSeat seat) {
+        if (seat == null) {
+            return null;
+        }
+        return new ReservedSeatResponseDto(
+            seat.getId(),
+            seat.getSeatId(),
+            seat.getRowNumber(),
+            seat.getSeatNumber()
+        );
+    }
+
+    /**
+     * Convierte una entidad Payment a PaymentResponseDto
+     */
+    private PaymentResponseDto convertPaymentToDto(Payment payment) {
+        if (payment == null) {
+            return null;
+        }
+        return new PaymentResponseDto(
+            payment.getId(),
+            payment.getAmount(),
+            payment.getPaymentMethod(),
+            payment.getStatus() != null ? payment.getStatus().toString() : null,
+            payment.getPaymentDate()
+        );
+    }
+
+    /**
+     * Convierte una lista de Reservations a lista de DTOs
+     */
+    public List<ReservationResponseDto> convertToDtoList(List<Reservation> reservations) {
+        if (reservations == null) {
+            return null;
+        }
+        return reservations.stream()
+            .map(this::convertToDto)
+            .collect(Collectors.toList());
     }
 }

@@ -74,9 +74,17 @@ public class UserController {
             @Parameter(description = "User ID", required = true)
             @PathVariable Long id) {
         try {
-            Optional<User> user = userService.getUserById(id);
-            if (user.isPresent()) {
-                return ResponseEntity.ok().body(new ApiResponseDto(true, user.get(), null));
+            Optional<User> userOpt = userService.getUserById(id);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                // Convertir a DTO simple sin referencias circulares
+                var userDto = new com.cinema.dto.UserResponseDto(
+                    user.getId(),
+                    user.getEmail(),
+                    user.getName(),
+                    user.getPhone()
+                );
+                return ResponseEntity.ok().body(new ApiResponseDto(true, userDto, null));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new ApiResponseDto(false, null, "User not found"));
@@ -91,8 +99,15 @@ public class UserController {
     public ResponseEntity<?> createUser(@Valid @RequestBody UserDto userDto) {
         try {
             User user = userService.createUser(userDto);
+            // Convertir a DTO simple
+            var userResponseDto = new com.cinema.dto.UserResponseDto(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPhone()
+            );
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new ApiResponseDto(true, user, null));
+                    .body(new ApiResponseDto(true, userResponseDto, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponseDto(false, null, e.getMessage()));
@@ -103,7 +118,14 @@ public class UserController {
     public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody UserDto userDto) {
         try {
             User user = userService.updateUser(id, userDto);
-            return ResponseEntity.ok().body(new ApiResponseDto(true, user, null));
+            // Convertir a DTO simple
+            var userResponseDto = new com.cinema.dto.UserResponseDto(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPhone()
+            );
+            return ResponseEntity.ok().body(new ApiResponseDto(true, userResponseDto, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponseDto(false, null, e.getMessage()));

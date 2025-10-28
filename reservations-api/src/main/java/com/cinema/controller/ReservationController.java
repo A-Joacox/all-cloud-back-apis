@@ -1,6 +1,7 @@
 package com.cinema.controller;
 
 import com.cinema.dto.ReservationDto;
+import com.cinema.dto.ReservationResponseDto;
 import com.cinema.model.Reservation;
 import com.cinema.service.ReservationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,7 +41,10 @@ public class ReservationController {
             int end = Math.min(offset + limit, reservations.size());
             List<Reservation> paginatedReservations = reservations.subList(start, end);
             
-            return ResponseEntity.ok().body(new ApiResponse(true, paginatedReservations, null));
+            // Convertir a DTOs
+            List<ReservationResponseDto> responseDtos = reservationService.convertToDtoList(paginatedReservations);
+            
+            return ResponseEntity.ok().body(new ApiResponse(true, responseDtos, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, null, e.getMessage()));
@@ -52,7 +56,8 @@ public class ReservationController {
         try {
             Optional<Reservation> reservation = reservationService.getReservationById(id);
             if (reservation.isPresent()) {
-                return ResponseEntity.ok().body(new ApiResponse(true, reservation.get(), null));
+                ReservationResponseDto responseDto = reservationService.convertToDto(reservation.get());
+                return ResponseEntity.ok().body(new ApiResponse(true, responseDto, null));
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new ApiResponse(false, null, "Reservation not found"));
@@ -67,7 +72,8 @@ public class ReservationController {
     public ResponseEntity<?> getUserReservations(@PathVariable Long userId) {
         try {
             List<Reservation> reservations = reservationService.getUserReservations(userId);
-            return ResponseEntity.ok().body(new ApiResponse(true, reservations, null));
+            List<ReservationResponseDto> responseDtos = reservationService.convertToDtoList(reservations);
+            return ResponseEntity.ok().body(new ApiResponse(true, responseDtos, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, null, e.getMessage()));
@@ -78,7 +84,8 @@ public class ReservationController {
     public ResponseEntity<?> getReservationsByMovie(@PathVariable String movieId) {
         try {
             List<Reservation> reservations = reservationService.getReservationsByMovie(movieId);
-            return ResponseEntity.ok().body(new ApiResponse(true, reservations, null));
+            List<ReservationResponseDto> responseDtos = reservationService.convertToDtoList(reservations);
+            return ResponseEntity.ok().body(new ApiResponse(true, responseDtos, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(false, null, e.getMessage()));
@@ -89,8 +96,9 @@ public class ReservationController {
     public ResponseEntity<?> createReservation(@Valid @RequestBody ReservationDto reservationDto) {
         try {
             Reservation reservation = reservationService.createReservation(reservationDto);
+            ReservationResponseDto responseDto = reservationService.convertToDto(reservation);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new ApiResponse(true, reservation, null));
+                    .body(new ApiResponse(true, responseDto, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse(false, null, e.getMessage()));
@@ -101,7 +109,8 @@ public class ReservationController {
     public ResponseEntity<?> cancelReservation(@PathVariable Long id) {
         try {
             Reservation reservation = reservationService.cancelReservation(id);
-            return ResponseEntity.ok().body(new ApiResponse(true, reservation, null));
+            ReservationResponseDto responseDto = reservationService.convertToDto(reservation);
+            return ResponseEntity.ok().body(new ApiResponse(true, responseDto, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse(false, null, e.getMessage()));
